@@ -5,4 +5,7 @@ public class Pos {
         this.x = x;
         this.y = y;
     }
+    public Pos add(Pos p2) {
+        return new Pos(x + p2.x, y + p2.y);
+    }
 }

@@ -10,6 +10,8 @@ import java.io.*;
 
 
 public class OpenSlay extends PApplet {
+
+    // Global Variables
     public GameState gameState = GameState.GAME;
     public HexMap gameMap;
 
@@ -17,7 +19,7 @@ public class OpenSlay extends PApplet {
     public Pos playAreaSize;
     public Pos playAreaOffset = new Pos(100, 100);
     
-
+    // Settings
     public static void main(String[] args) {
         String[] appletArgs = new String[] { "OpenSlay" };
         PApplet.main(appletArgs);
@@ -28,10 +30,7 @@ public class OpenSlay extends PApplet {
     }
     public void setup(){
         frameRate(60);
-
         gameMap = loadMap("map.slay");
-
-
     }
 
 
@@ -44,11 +43,23 @@ public class OpenSlay extends PApplet {
         }
     }
 
-
+    // In-Game Functions
     public void ingame(){
         drawMap(gameMap);
 
     }
+
+    public void mousePressed(){
+        switch(gameState){
+            case GAME:
+                for(Hex n : gameMap.getNeighbors(gameMap.getHex(2,2))){
+                    n.color = new Color(255,0,0);
+                }
+                break;
+        }
+    }
+
+    // IO Functions
 
     // Function for loading a map. Maps use a .slay file format.
     // 0 = water
@@ -131,6 +142,9 @@ public class OpenSlay extends PApplet {
         }
         endShape(CLOSE);
     }
+
+
+    // ENUMS
 
     public enum GameState {
         MENU,
