@@ -5,10 +5,13 @@ public class Hex {
     boolean tree;
     boolean filled;
     public Hex(int x, int y) {
+        this(x, y, true);
+    }
+    public Hex(int x, int y, boolean filled){
         this.x = x;
         this.y = y;
-        this.color = new Color(0, 0, 0);
+        this.filled = filled;
+        this.color = new Color(255, 255, 255);
         this.tree = false;
-        this.filled = false;
     }
 }
