@@ -25,3 +25,6 @@ hs_err_pid*
 # Scripts
 *.sh
 *.bat
+
+# Map files
+*.slay
