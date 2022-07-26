@@ -12,6 +12,7 @@ import java.io.*;
 public class OpenSlay extends PApplet {
 
     // Global Static Variables
+    public static PFont font;
     public static HashMap<String, PImage> textures = new HashMap<String, PImage>();
     public static int hexSize = 32;
     public static Color[] playerColors = {
@@ -37,13 +38,16 @@ public class OpenSlay extends PApplet {
         PApplet.main(appletArgs);
     }
     public void settings(){
-        fullScreen();
-        //size(1280,720);
+        //fullScreen();
+        size(1280,720);
         noSmooth();
     }
     public void setup(){
         frameRate(60);
         imageMode(CENTER);
+        textAlign(CENTER, CENTER);
+        font = createFont("./fonts/pixeloidsans.ttf", 32);
+        textFont(font, 32);
         importTexture("background", "./textures/bg.png", 32);
         importTexture("pine", "./textures/pine.png", (int)(hexSize * 0.75));
         importTexture("palm", "./textures/palm.png", (int)(hexSize * 0.75));
@@ -199,6 +203,8 @@ public class OpenSlay extends PApplet {
     public void drawToolBar(){
         fill(161, 161, 161);
         rect(width-(width * .25f), 0, width * 0.25f, height);
+        fill(0, 0, 0);
+        text("OpenSlay", width-(width * .25f) + (width * 0.25f / 2), height / 10);
     }
     public void drawMap(HexMap map){
         for(int x = 0; x < map.width; x++){
