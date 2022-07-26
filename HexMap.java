@@ -8,7 +8,7 @@ import java.util.*;
 
 public class HexMap {
 
-    // Lookup table for hex neigbors
+    // Lookup table for hex neighbors
     final Pos[][] hexDirections = {
         // Even Columns
         { 

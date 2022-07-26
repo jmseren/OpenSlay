@@ -19,6 +19,9 @@ public class Hex {
         this.owner = player;
         this.color = player.color;
     }
+    public Player getOwner(){
+        return this.owner;
+    }
 
     public Pos getPos(){
         return new Pos(this.x, this.y);

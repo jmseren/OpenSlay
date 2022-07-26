@@ -11,11 +11,20 @@ import java.io.*;
 
 public class OpenSlay extends PApplet {
 
-    // Global Variables
-    public GameState gameState = GameState.GAME;
-    public HexMap gameMap;
-
+    // Global Static Variables
     public static int hexSize = 32;
+    public static Color[] playerColors = {
+        new Color(50, 168, 82),
+        new Color(0, 127, 200),
+        new Color(245, 152, 66),
+        new Color(177, 77, 184),
+    };
+    public static Player[] players = new Player[playerColors.length];
+    public static HexMap gameMap;
+
+
+    // Global Variables
+    public GameState gameState = GameState.INIT_GAME;
 
     public Hex selectedHex;
     public Pos playAreaSize;
@@ -32,13 +41,22 @@ public class OpenSlay extends PApplet {
     }
     public void setup(){
         frameRate(60);
+
         gameMap = loadMap("map.slay");
+
+        // Create Players
+        for(int i = 0; i < playerColors.length; i++){
+            players[i] = new Player(playerColors[i]);
+        }
     }
 
 
     public void draw(){
         background(0, 0, 255);
         switch(gameState){
+            case INIT_GAME:
+                initGame();
+                break;
             case GAME:
                 ingame();
                 break;
@@ -46,6 +64,19 @@ public class OpenSlay extends PApplet {
     }
 
     // In-Game Functions
+    public void initGame(){
+        // Randomize players territories
+        for(int x = 0; x < gameMap.width; x++){
+            for(int y = 0; y < gameMap.height; y++){
+                Hex hex = gameMap.getHex(x, y);
+                if(hex.filled){
+                    hex.setOwner(players[(int)(Math.random() * players.length)]);
+                }
+            }
+        }
+
+        gameState = GameState.GAME;
+    }
     public void ingame(){
         drawMap(gameMap);
 
@@ -54,9 +85,10 @@ public class OpenSlay extends PApplet {
     public void mousePressed(){
         switch(gameState){
             case GAME:
-                for(Hex n : gameMap.getNeighbors(getClosestHex())){
-                    n.color = new Color(0, 127, 200);
-                };
+                Territory t = new Territory(getClosestHex());
+                for(Hex h : t.tiles){
+                    h.color = new Color(0, 0, 0);
+                }
                 break;
         }
     }
@@ -171,6 +203,7 @@ public class OpenSlay extends PApplet {
 
     public enum GameState {
         MENU,
+        INIT_GAME,
         GAME,
         PAUSE,
         END
