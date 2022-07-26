@@ -15,7 +15,9 @@ public class OpenSlay extends PApplet {
     public GameState gameState = GameState.GAME;
     public HexMap gameMap;
 
-    public int hexSize = 32;
+    public static int hexSize = 32;
+
+    public Hex selectedHex;
     public Pos playAreaSize;
     public Pos playAreaOffset = new Pos(100, 100);
     
@@ -52,18 +54,39 @@ public class OpenSlay extends PApplet {
     public void mousePressed(){
         switch(gameState){
             case GAME:
-                for(Hex n : gameMap.getNeighbors(gameMap.getHex(2,2))){
-                    n.color = new Color(255,0,0);
-                }
+                for(Hex n : gameMap.getNeighbors(getClosestHex())){
+                    n.color = new Color(0, 127, 200);
+                };
                 break;
         }
     }
 
-    // IO Functions
+    // Probably not the best way, but the quickest solution I could think of to get going
+    public Hex getClosestHex(){
+        Hex closestHex = gameMap.getHex(0,0);
+        Pos p = closestHex.rawPos(playAreaOffset.x, playAreaOffset.y);
+        float distance = dist(mouseX, mouseY, p.x, p.y);
+        for(int x = 0; x < gameMap.width; x++){
+            for(int y = 0; y < gameMap.height; y++){
+                p = gameMap.getHex(x,y).rawPos(playAreaOffset.x, playAreaOffset.y);
+                float d = dist(mouseX, mouseY, p.x, p.y);
+                if(d < distance){
+                    distance = d;
+                    closestHex = gameMap.getHex(x, y);
+                }
+            }
+        }
+        return closestHex;
+    }
+
+    // File IO Functions
 
     // Function for loading a map. Maps use a .slay file format.
     // 0 = water
     // 1 = land
+    // 2 = pine
+    // 3 = palm
+
     public HexMap loadMap(String mapFile){
         try{
             HexMap map = null;
@@ -92,7 +115,7 @@ public class OpenSlay extends PApplet {
                 if(line.charAt(0) == '#') continue; // This line is a comment.
                 if(lineSplit.length != map.width) throw new Exception("Invalid map file: line length does not equal map width.");
                 for(String s : lineSplit){
-                    map.hexes[x][y] = new Hex(x, y, Integer.parseInt(s) > 0);
+                    map.hexes[x][y] = new Hex(x, y, Integer.parseInt(s));
                     x++;
                 }
                 x=0;

@@ -8,6 +8,7 @@ import java.util.*;
 
 public class HexMap {
 
+    // Lookup table for hex neigbors
     final Pos[][] hexDirections = {
         // Even Columns
         { 
@@ -50,7 +51,7 @@ public class HexMap {
     // Use a lookup table to get the neighbors of the requested hex
     public Hex[] getNeighbors(Hex hex) {
         ArrayList<Hex> neighbors = new ArrayList<Hex>();
-        for(Pos direction : hexDirections[hex.y % 2]){
+        for(Pos direction : hexDirections[hex.x % 2]){
             Pos nPos = hex.getPos().add(direction);
             if(inBounds(nPos)) neighbors.add(getHex(nPos));
         }
@@ -58,7 +59,7 @@ public class HexMap {
     }
 
     public boolean inBounds(Pos pos){
-        return pos.x > 0 && pos.x < this.width && pos.y > 0 && pos.y < this.height;
+        return pos.x >= 0 && pos.x < this.width && pos.y >= 0 && pos.y < this.height;
     }
 }
 
