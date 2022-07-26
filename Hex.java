@@ -7,11 +7,15 @@ public class Hex {
     boolean filled;
     int code;
 
+    // Capital hex variables
+    public boolean capital = false;
+    public int gold = 0;
+
     public Hex(int x, int y, int mapCode){
         this.x = x;
         this.y = y;
         this.filled = mapCode > 0;
-        this.code = code;
+        this.code = mapCode;
         this.color = new Color(255, 255, 255);
     }
 

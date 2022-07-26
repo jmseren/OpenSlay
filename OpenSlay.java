@@ -12,6 +12,7 @@ import java.io.*;
 public class OpenSlay extends PApplet {
 
     // Global Static Variables
+    public static HashMap<String, PImage> textures = new HashMap<String, PImage>();
     public static int hexSize = 32;
     public static Color[] playerColors = {
         new Color(50, 168, 82),
@@ -41,7 +42,10 @@ public class OpenSlay extends PApplet {
     }
     public void setup(){
         frameRate(60);
-
+        imageMode(CENTER);
+        textures.put("background", loadImage("./textures/bg.png"));
+        textures.put("pine", loadImage("./textures/pine.png"));
+        textures.put("palm", loadImage("./textures/palm.png"));
         gameMap = loadMap("map.slay");
 
         // Create Players
@@ -53,6 +57,7 @@ public class OpenSlay extends PApplet {
 
     public void draw(){
         background(0, 0, 255);
+        drawBackground();
         switch(gameState){
             case INIT_GAME:
                 initGame();
@@ -164,7 +169,16 @@ public class OpenSlay extends PApplet {
 
 
     // Drawing Functions
-
+    public void drawBackground(){
+        imageMode(CORNER);
+        int size = 16;
+        for(int x = 0; x < width; x += size){
+            for(int y = 0; y < height; y += size){
+                image(textures.get("background"), x, y);
+            }
+        }
+        imageMode(CENTER);
+    }
     public void drawMap(HexMap map){
         for(int x = 0; x < map.width; x++){
             for(int y = 0; y < map.height; y++){
@@ -182,6 +196,14 @@ public class OpenSlay extends PApplet {
         }
         fill(hex.color.toProcessingColor());
         polygon(x + playAreaOffset.x, y + playAreaOffset.y, hexSize, 6);
+
+        switch(hex.code){
+            case 2:
+                image(textures.get("pine"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
+            case 3:
+                image(textures.get("palm"), x + playAreaOffset.x, y + playAreaOffset.y);
+        }
     }
 
 
