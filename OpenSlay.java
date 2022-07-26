@@ -37,15 +37,17 @@ public class OpenSlay extends PApplet {
         PApplet.main(appletArgs);
     }
     public void settings(){
-        size(1280,720);
+        fullScreen();
+        //size(1280,720);
         noSmooth();
     }
     public void setup(){
         frameRate(60);
         imageMode(CENTER);
-        textures.put("background", loadImage("./textures/bg.png"));
-        textures.put("pine", loadImage("./textures/pine.png"));
-        textures.put("palm", loadImage("./textures/palm.png"));
+        importTexture("background", "./textures/bg.png", 32);
+        importTexture("pine", "./textures/pine.png", (int)(hexSize * 0.75));
+        importTexture("palm", "./textures/palm.png", (int)(hexSize * 0.75));
+        importTexture("capital", "./textures/capital.png", (int)(hexSize * 0.75));
         gameMap = loadMap("map.slay");
 
         // Create Players
@@ -83,17 +85,26 @@ public class OpenSlay extends PApplet {
         gameState = GameState.GAME;
     }
     public void ingame(){
+        refreshMap();
+        drawToolBar();
         drawMap(gameMap);
 
     }
+    public void refreshMap(){
+        ArrayList<Hex> hexes = gameMap.allHexes();
+        while(hexes.size() > 0){
+            Territory t = new Territory(hexes.get(0));
+            for(Hex h2 : t.tiles){
+                hexes.remove(h2);
+            }
+        }
+    }
+
 
     public void mousePressed(){
         switch(gameState){
             case GAME:
                 Territory t = new Territory(getClosestHex());
-                for(Hex h : t.tiles){
-                    h.color = new Color(0, 0, 0);
-                }
                 break;
         }
     }
@@ -118,12 +129,18 @@ public class OpenSlay extends PApplet {
 
     // File IO Functions
 
+    // Asset loading
+    public void importTexture(String name, String path, int size){
+        PImage img = loadImage(path);
+        img.resize(size, size);
+        textures.put(name, img);
+    }
+
     // Function for loading a map. Maps use a .slay file format.
     // 0 = water
     // 1 = land
     // 2 = pine
     // 3 = palm
-
     public HexMap loadMap(String mapFile){
         try{
             HexMap map = null;
@@ -171,13 +188,17 @@ public class OpenSlay extends PApplet {
     // Drawing Functions
     public void drawBackground(){
         imageMode(CORNER);
-        int size = 16;
+        int size = textures.get("background").width;
         for(int x = 0; x < width; x += size){
             for(int y = 0; y < height; y += size){
                 image(textures.get("background"), x, y);
             }
         }
         imageMode(CENTER);
+    }
+    public void drawToolBar(){
+        fill(161, 161, 161);
+        rect(width-(width * .25f), 0, width * 0.25f, height);
     }
     public void drawMap(HexMap map){
         for(int x = 0; x < map.width; x++){
@@ -204,6 +225,7 @@ public class OpenSlay extends PApplet {
             case 3:
                 image(textures.get("palm"), x + playAreaOffset.x, y + playAreaOffset.y);
         }
+        if(hex.capital) image(textures.get("capital"), x + playAreaOffset.x, y + playAreaOffset.y);
     }
 
 

@@ -23,6 +23,26 @@ public class Territory {
             toCheck.remove(0);
         }
         
+        // If the territory doesn't have a capital, set it to the first tile
+        if(tiles.size() >= 2 && this.getCapital() == null){
+            for(Hex tile : tiles){
+                if(tile.code == 1){
+                    setCapital(tile);
+                    break;
+                }
+            }
+        }
         
+        
+    }
+    public Hex getCapital() {
+        for(Hex h : tiles) {
+            if(h.capital) return h;
+        }
+        return null;
+    }
+    public void setCapital(Hex c){
+        c.capital = true;
+        c.gold = 0;
     }
 }
