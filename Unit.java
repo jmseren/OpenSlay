@@ -3,12 +3,14 @@ import processing.core.*;
 // The unit class is only for when the unit is being dragged and dropped.
 
 public class Unit {
-    public int strength;
+    public int power;
     PImage texture;
+    Territory territory;
 
-    public Unit(int strength) {
-        this.strength = strength;
-        switch(strength){
+    public Unit(int power, Territory territory) {
+        this.power = power;
+        this.territory = territory;
+        switch(power){
             case 1:
                 texture = OpenSlay.textures.get("peasant");
                 break;

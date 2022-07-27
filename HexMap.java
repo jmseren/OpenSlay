@@ -61,6 +61,7 @@ public class HexMap {
     public boolean inBounds(Pos pos){
         return pos.x >= 0 && pos.x < this.width && pos.y >= 0 && pos.y < this.height;
     }
+
     public ArrayList<Hex> allHexes(){
         ArrayList<Hex> hexes = new ArrayList<Hex>();
         for(int x = 0; x < this.width; x++){
@@ -70,5 +71,7 @@ public class HexMap {
         }
         return hexes;
     }
+
+    
 }
 

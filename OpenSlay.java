@@ -113,6 +113,7 @@ public class OpenSlay extends PApplet {
         if(refresh) refreshMap();
         drawToolBar();
         drawMap(gameMap);
+        drawUnit();
 
     }
     public void refreshMap(){
@@ -133,19 +134,32 @@ public class OpenSlay extends PApplet {
         switch(gameState){
             case GAME:
                 Hex h = getClosestHex();
-                if(h != null){
+                if(h != null && selectedUnit == null){
                     if(h.owner == currPlayer && (h.code >= 1 && h.code <= 3|| h.capital == true) && h.territory.size() >= 2){
                         // The player has clicked on a territory, and it is a selectable tile and size
                         selectedTerritory = h.territory;
                         selectedHex = null;
                         selectedUnit = null;
                     }
-                }else{
-                    if(selectedTerritory != null){
-                        // Check if the player has clicked on the unit in the toolbar
-                        if(dist(mouseX, mouseY, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2) < textures.get("peasant").width){
-                            selectedUnit = new Unit(1);
-                        }
+                }else if(selectedTerritory != null){
+                    // Check if the player has clicked on the unit in the toolbar
+                    if(dist(mouseX, mouseY, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2) < textures.get("peasant").width && selectedTerritory.getCapital().gold >= 10){
+                        selectedUnit = new Unit(1, selectedTerritory);
+                        selectedTerritory = null;
+                        selectedHex = null;
+                    }
+                    
+                }else if(selectedUnit != null && h != null){
+                    // Player has attempted to place a unit
+                    if(h.isEmpty() && h.territory == selectedUnit.territory){
+                        /// Valid territory for the unit
+                        selectedHex = null;
+                        selectedTerritory = selectedUnit.territory;
+                        h.setUnit(selectedUnit);
+                        
+                        selectedUnit = null;
+
+                        selectedTerritory.getCapital().gold -= 10;
                     }
                 }
                 
@@ -251,7 +265,7 @@ public class OpenSlay extends PApplet {
         if(selectedTerritory != null){
             int gold = selectedTerritory.getCapital().gold;
             text("Gold: " + gold, width-(width * .25f) + (width * 0.25f / 2), height / 10 + (height / 10) * 1);
-            if(gold >= 120){
+            if(gold >= 10){
                 PImage peasant = textures.get("peasant");
                 image(peasant, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2, peasant.width * 2, peasant.height * 2);
             }else{
@@ -313,6 +327,7 @@ public class OpenSlay extends PApplet {
                 break;
             case 3:
                 image(textures.get("palm"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
             case 4:
                 image(textures.get("peasant"), x + playAreaOffset.x, y + playAreaOffset.y);
                 break;
@@ -340,7 +355,11 @@ public class OpenSlay extends PApplet {
         s.endShape(CLOSE);
         shape(s, 0,0);
     }
-
+    public void drawUnit(){
+        if(selectedUnit != null){
+            image(selectedUnit.texture, mouseX, mouseY);
+        }
+    }
 
     // ENUMS
 

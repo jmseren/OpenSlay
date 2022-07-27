@@ -1,3 +1,5 @@
+import java.util.*;
+
 public class Hex {
     public int x;
     public int y;
@@ -24,12 +26,27 @@ public class Hex {
         this.owner = player;
         this.color = player.color;
     }
+    public void setUnit(Unit unit){
+        this.code = unitPowerToCode(unit.power);
+    }
     public Player getOwner(){
         return this.owner;
     }
 
     public Pos getPos(){
         return new Pos(this.x, this.y);
+    }
+
+    public int codeToUnitPower(int code){
+        return Math.max(code - 3, 0);
+    }
+    public int unitPowerToCode(int power){
+        return power + 3;
+    }
+
+    public boolean isEmpty(){
+        // Returns whether or not the hex has a unit or tree on it
+        return this.code == 1 && !this.capital;
     }
 
     // The pixel position of the hex on the window
