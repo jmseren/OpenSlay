@@ -133,7 +133,7 @@ public class OpenSlay extends PApplet {
         switch(gameState){
             case GAME:
                 Hex h = getClosestHex();
-                if(h.owner == currPlayer && (h.code == 1 || h.capital == true) && h.territory.size() >= 2){
+                if(h != null && h.owner == currPlayer && (h.code == 1 || h.capital == true) && h.territory.size() >= 2){
                     selectedTerritory = h.territory;
                     selectedHex = null;
                     selectedUnit = null;
@@ -156,6 +156,9 @@ public class OpenSlay extends PApplet {
                     closestHex = gameMap.getHex(x, y);
                 }
             }
+        }
+        if(distance < hexSize * 0.5){
+            return null;
         }
         return closestHex;
     }
@@ -299,6 +302,9 @@ public class OpenSlay extends PApplet {
                 break;
             case 3:
                 image(textures.get("palm"), x + playAreaOffset.x, y + playAreaOffset.y);
+            case 4:
+                image(textures.get("peasant"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
         }
         if(hex.capital) image(textures.get("capital"), x + playAreaOffset.x, y + playAreaOffset.y);
     }
