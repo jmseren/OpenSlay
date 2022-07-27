@@ -61,6 +61,7 @@ public class OpenSlay extends PApplet {
         importTexture("pine", "./textures/pine.png", (int)(hexSize * 0.75));
         importTexture("palm", "./textures/palm.png", (int)(hexSize * 0.75));
         importTexture("capital", "./textures/capital.png", (int)(hexSize * 0.75));
+        importTexture("peasant", "./textures/peasant.png", (int)(hexSize * 0.75));
         gameMap = loadMap("map.slay");
 
         // Create Players
@@ -234,7 +235,23 @@ public class OpenSlay extends PApplet {
         fill(0, 0, 0);
         text("OpenSlay", width-(width * .25f) + (width * 0.25f / 2), height / 10);
         if(selectedTerritory != null){
-            text("Gold: " + selectedTerritory.getCapital().gold, width-(width * .25f) + (width * 0.25f / 2), height / 10 + (height / 10) * 1);
+            int gold = selectedTerritory.getCapital().gold;
+            text("Gold: " + gold, width-(width * .25f) + (width * 0.25f / 2), height / 10 + (height / 10) * 1);
+            if(gold >= 120){
+                PImage peasant = textures.get("peasant");
+                image(peasant, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2, peasant.width * 2, peasant.height * 2);
+            }else{
+                PImage peasant = textures.get("peasant");
+                
+                // Create a PGraphics object so that we can use a filter on it
+                PGraphics g = createGraphics(peasant.width * 2, peasant.height * 2);
+                g.beginDraw();
+                g.image(peasant, 0, 0, peasant.width * 2, peasant.height * 2);
+                g.filter(GRAY);
+                g.endDraw();
+
+                image(g, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2);
+            }
         }
     }
     public void drawMap(HexMap map){
