@@ -22,13 +22,22 @@ public class OpenSlay extends PApplet {
         new Color(177, 77, 184),
     };
     public static Player[] players = new Player[playerColors.length];
+    public static Player currPlayer;
     public static HexMap gameMap;
 
 
     // Global Variables
     public GameState gameState = GameState.INIT_GAME;
 
+    public ArrayList<Territory> currTerritories;
+
+    public int turn = 0;
+    public boolean refresh = true;
+
     public Hex selectedHex;
+    public Territory selectedTerritory;
+    public Unit selectedUnit;
+
     public Pos playAreaSize;
     public Pos playAreaOffset = new Pos(100, 100);
     
@@ -58,6 +67,7 @@ public class OpenSlay extends PApplet {
         for(int i = 0; i < playerColors.length; i++){
             players[i] = new Player(playerColors[i]);
         }
+        currPlayer = players[0];
     }
 
 
@@ -85,35 +95,53 @@ public class OpenSlay extends PApplet {
                 }
             }
         }
+        // Set initial territories
+        refreshMap();
+
+        // Give every capital a starting balance of 10 gold
+        for(Territory t : currTerritories){
+            Hex capital = t.getCapital();
+            if(capital != null){
+                capital.gold = 10;
+            }
+        }
 
         gameState = GameState.GAME;
     }
     public void ingame(){
-        refreshMap();
+        if(refresh) refreshMap();
         drawToolBar();
         drawMap(gameMap);
 
     }
     public void refreshMap(){
         ArrayList<Hex> hexes = gameMap.allHexes();
+        currTerritories = new ArrayList<Territory>();
         while(hexes.size() > 0){
             Territory t = new Territory(hexes.get(0));
             for(Hex h2 : t.tiles){
                 hexes.remove(h2);
             }
+            currTerritories.add(t);
         }
+        refresh = false;
     }
 
 
     public void mousePressed(){
         switch(gameState){
             case GAME:
-                Territory t = new Territory(getClosestHex());
+                Hex h = getClosestHex();
+                if(h.owner == currPlayer && (h.code == 1 || h.capital == true) && h.territory.size() >= 2){
+                    selectedTerritory = h.territory;
+                    selectedHex = null;
+                    selectedUnit = null;
+                }
                 break;
         }
     }
 
-    // Probably not the best way, but the quickest solution I could think of to get going
+    // Definitely not the best way, but the quickest solution I could think of to get going
     public Hex getClosestHex(){
         Hex closestHex = gameMap.getHex(0,0);
         Pos p = closestHex.rawPos(playAreaOffset.x, playAreaOffset.y);
@@ -205,13 +233,29 @@ public class OpenSlay extends PApplet {
         rect(width-(width * .25f), 0, width * 0.25f, height);
         fill(0, 0, 0);
         text("OpenSlay", width-(width * .25f) + (width * 0.25f / 2), height / 10);
+        if(selectedTerritory != null){
+            text("Gold: " + selectedTerritory.getCapital().gold, width-(width * .25f) + (width * 0.25f / 2), height / 10 + (height / 10) * 1);
+        }
     }
     public void drawMap(HexMap map){
+        // ArrayList to store hexes that should be drawn last
+        ArrayList<Hex> differed = new ArrayList<Hex>();
+
         for(int x = 0; x < map.width; x++){
             for(int y = 0; y < map.height; y++){
                 Hex hex = map.hexes[x][y];
+
+                if(hex.filled && selectedTerritory != null && hex.territory == selectedTerritory){
+                    differed.add(hex);
+                    continue;
+                }
                 if(hex.filled) drawHex(hex);
+
+
             }
+        }
+        for(Hex h : differed){
+            drawHex(h);
         }
     }
     public void drawHex(Hex hex){
@@ -221,8 +265,16 @@ public class OpenSlay extends PApplet {
         if(hex.x % 2 == 1){
             y += h / 2.0;
         }
+
+        // Make sure selected hexes get a border
+        boolean selected = false;
+        if(selectedTerritory != null && selectedTerritory == hex.territory){
+            selected = true;
+        }
+        
+
         fill(hex.color.toProcessingColor());
-        polygon(x + playAreaOffset.x, y + playAreaOffset.y, hexSize, 6);
+        polygon(x + playAreaOffset.x, y + playAreaOffset.y, hexSize, 6, selected);
 
         switch(hex.code){
             case 2:
@@ -237,15 +289,22 @@ public class OpenSlay extends PApplet {
 
     // This method is adapted from the Processing Documentation
     // https://processing.org/examples/regularpolygon.html
-    public void polygon(int x, int y, int radius, int npoints){ 
+    public void polygon(int x, int y, int radius, int npoints, boolean highlight){ 
         float angle = TWO_PI / npoints;
-        beginShape();
+        
+
+        PShape s = createShape();
+        if(highlight) s.setStroke(255);        
+        
+        s.beginShape();
+        if(highlight) s.strokeWeight(3);
         for (float a = 0; a < TWO_PI; a += angle) {
             float sx = x + cos(a) * radius;
             float sy = y + sin(a) * radius;
-            vertex(sx, sy);
+            s.vertex(sx, sy);
         }
-        endShape(CLOSE);
+        s.endShape(CLOSE);
+        shape(s, 0,0);
     }
 
 

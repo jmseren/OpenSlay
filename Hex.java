@@ -3,6 +3,7 @@ public class Hex {
     public int y;
     public Color color;
     public Player owner;
+    Territory territory;
 
     boolean filled;
     int code;

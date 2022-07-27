@@ -11,6 +11,7 @@ public class Territory {
 
         while(toCheck.size() > 0) {
             // Anything in toCheck is part of the territory
+            toCheck.get(0).territory = this;
             tiles.add(toCheck.get(0));
 
             // Check the neighbors to see if they should be added to toCheck
@@ -44,5 +45,8 @@ public class Territory {
     public void setCapital(Hex c){
         c.capital = true;
         c.gold = 0;
+    }
+    public int size(){
+        return tiles.size();
     }
 }
