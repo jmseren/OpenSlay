@@ -133,11 +133,22 @@ public class OpenSlay extends PApplet {
         switch(gameState){
             case GAME:
                 Hex h = getClosestHex();
-                if(h != null && h.owner == currPlayer && (h.code == 1 || h.capital == true) && h.territory.size() >= 2){
-                    selectedTerritory = h.territory;
-                    selectedHex = null;
-                    selectedUnit = null;
+                if(h != null){
+                    if(h.owner == currPlayer && (h.code >= 1 && h.code <= 3|| h.capital == true) && h.territory.size() >= 2){
+                        // The player has clicked on a territory, and it is a selectable tile and size
+                        selectedTerritory = h.territory;
+                        selectedHex = null;
+                        selectedUnit = null;
+                    }
+                }else{
+                    if(selectedTerritory != null){
+                        // Check if the player has clicked on the unit in the toolbar
+                        if(dist(mouseX, mouseY, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2) < textures.get("peasant").width){
+                            selectedUnit = new Unit(1);
+                        }
+                    }
                 }
+                
                 break;
         }
     }
@@ -157,7 +168,7 @@ public class OpenSlay extends PApplet {
                 }
             }
         }
-        if(distance < hexSize * 0.5){
+        if(distance > hexSize){
             return null;
         }
         return closestHex;
