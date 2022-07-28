@@ -156,11 +156,16 @@ public class OpenSlay extends PApplet {
                         selectedHex = null;
                         selectedTerritory = selectedUnit.territory;
                         h.setUnit(selectedUnit);
-                        
+
                         selectedUnit = null;
 
                         selectedTerritory.getCapital().gold -= 10;
                     }
+                }else if(h != null && h.code >= 4){
+                    // Player has clicked on a unit
+                    selectedUnit = h.getUnit();
+                    selectedTerritory = null;
+                    selectedHex = null;
                 }
                 
                 break;

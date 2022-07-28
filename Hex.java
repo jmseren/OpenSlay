@@ -26,6 +26,11 @@ public class Hex {
         this.owner = player;
         this.color = player.color;
     }
+    public Unit getUnit(){
+        Unit u = new Unit(codeToUnitPower(code), this.territory);
+        this.code = 1;
+        return u;
+    }
     public void setUnit(Unit unit){
         this.code = unitPowerToCode(unit.power);
     }
