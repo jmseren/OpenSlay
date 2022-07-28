@@ -88,11 +88,16 @@ public class OpenSlay extends PApplet {
     // In-Game Functions
     public void initGame(){
         // Randomize players territories
+        ShuffleBag<Player> playerBag = new ShuffleBag<Player>();
+        for(Player p : players){
+            playerBag.add(p, 2);
+        }
+
         for(int x = 0; x < gameMap.width; x++){
             for(int y = 0; y < gameMap.height; y++){
                 Hex hex = gameMap.getHex(x, y);
                 if(hex.filled){
-                    hex.setOwner(players[(int)(Math.random() * players.length)]);
+                    hex.setOwner(playerBag.next());
                 }
             }
         }
