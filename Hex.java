@@ -5,10 +5,12 @@ public class Hex {
     public int y;
     public Color color;
     public Player owner;
+    public boolean unitCanMove = true;
     Territory territory;
 
     boolean filled;
     int code;
+
 
     // Capital hex variables
     public boolean capital = false;
@@ -43,8 +45,12 @@ public class Hex {
     }
 
     public int codeToUnitPower(int code){
-        return Math.max(code - 3, 0);
+        return Math.max(code - 3, this.capital ? 1 : 0);
     }
+    public int codeToUnitPower(){
+        return codeToUnitPower(this.code);
+    }
+
     public int unitPowerToCode(int power){
         return power + 3;
     }

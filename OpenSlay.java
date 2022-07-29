@@ -139,17 +139,23 @@ public class OpenSlay extends PApplet {
         switch(gameState){
             case GAME:
                 Hex h = getClosestHex();
-                if(h != null && selectedUnit == null){
-                    if(h.owner == currPlayer && (h.code >= 1 && h.code <= 3|| h.capital == true) && h.territory.size() >= 2){
+                if(h != null && selectedUnit == null && (h.code >= 1 && h.code <= 3 || h.capital == true) ){
+                    if(h.owner == currPlayer && h.territory.size() >= 2){
                         // The player has clicked on a territory, and it is a selectable tile and size
                         selectedTerritory = h.territory;
                         selectedHex = null;
                         selectedUnit = null;
                     }
+                }else if(h != null && h.code >= 4 && h.unitCanMove){
+                    // Player has clicked on a unit
+                    selectedUnit = h.getUnit();
+                    selectedTerritory = null;
+                    selectedHex = null;
                 }else if(selectedTerritory != null){
                     // Check if the player has clicked on the unit in the toolbar
                     if(dist(mouseX, mouseY, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2) < textures.get("peasant").width && selectedTerritory.getCapital().gold >= 10){
                         selectedUnit = new Unit(1, selectedTerritory);
+                        selectedTerritory.getCapital().gold -= 10;
                         selectedTerritory = null;
                         selectedHex = null;
                     }
@@ -164,14 +170,19 @@ public class OpenSlay extends PApplet {
 
                         selectedUnit = null;
 
-                        selectedTerritory.getCapital().gold -= 10;
+                    }else if(selectedUnit.territory.isNeighbor(gameMap, h)){
+                        // Neighboring hex of territory, unit can attack this square
+                        if(gameMap.getRelativePower(h) < selectedUnit.power){
+                            // Unit can attack this square
+                            h.setOwner(currPlayer);
+                            h.setUnit(selectedUnit);
+                            h.unitCanMove = false;
+                            selectedUnit = null;
+                            refreshMap();
+                        }
                     }
-                }else if(h != null && h.code >= 4){
-                    // Player has clicked on a unit
-                    selectedUnit = h.getUnit();
-                    selectedTerritory = null;
-                    selectedHex = null;
                 }
+                
                 
                 break;
         }
@@ -350,7 +361,6 @@ public class OpenSlay extends PApplet {
     // https://processing.org/examples/regularpolygon.html
     public void polygon(int x, int y, int radius, int npoints, boolean highlight){ 
         float angle = TWO_PI / npoints;
-        
 
         PShape s = createShape();
         if(highlight) s.setStroke(255);        

@@ -49,4 +49,10 @@ public class Territory {
     public int size(){
         return tiles.size();
     }
+    public boolean isNeighbor(HexMap map, Hex h){
+        for(Hex n : map.getNeighbors(h)){
+            if(tiles.contains(n)) return true;
+        }
+        return false;
+    }
 }

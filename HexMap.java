@@ -57,6 +57,15 @@ public class HexMap {
         }
         return neighbors.toArray(new Hex[neighbors.size()]);
     }
+    public int getRelativePower(Hex h){
+        int power = h.codeToUnitPower();
+        for(Hex n : getNeighbors(h)){
+            if(n.owner == h.owner){
+                power = Math.max(power, n.codeToUnitPower());
+            }
+        }
+        return power;
+    }
 
     public boolean inBounds(Pos pos){
         return pos.x >= 0 && pos.x < this.width && pos.y >= 0 && pos.y < this.height;
