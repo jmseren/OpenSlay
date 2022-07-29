@@ -79,6 +79,9 @@ public class OpenSlay extends PApplet {
             case INIT_GAME:
                 initGame();
                 break;
+            case NEW_TURN:
+                newTurn();
+                break;
             case GAME:
                 ingame();
                 break;
@@ -113,6 +116,9 @@ public class OpenSlay extends PApplet {
         }
 
         gameState = GameState.GAME;
+    }
+    public void newTurn(){
+
     }
     public void ingame(){
         if(refresh) refreshMap();
@@ -283,6 +289,8 @@ public class OpenSlay extends PApplet {
         rect(width-(width * .25f), 0, width * 0.25f, height);
         fill(0, 0, 0);
         text("OpenSlay", width-(width * .25f) + (width * 0.25f / 2), height / 10);
+
+
         if(selectedTerritory != null){
             int gold = selectedTerritory.getCapital().gold;
             text("Gold: " + gold, width-(width * .25f) + (width * 0.25f / 2), height / 10 + (height / 10) * 1);
@@ -302,6 +310,9 @@ public class OpenSlay extends PApplet {
                 image(g, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2);
             }
         }
+
+        text("End Turn", width-(width * .25f) + (width * 0.25f / 2), height - (height / 10));
+
     }
     public void drawMap(HexMap map){
         // ArrayList to store hexes that should be drawn last
@@ -386,6 +397,7 @@ public class OpenSlay extends PApplet {
     public enum GameState {
         MENU,
         INIT_GAME,
+        NEW_TURN,
         GAME,
         PAUSE,
         END
