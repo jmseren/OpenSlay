@@ -253,7 +253,7 @@ public class OpenSlay extends PApplet {
                         selectedUnit = null;
                         refresh = true;
 
-                    }else if(selectedUnit.territory.isNeighbor(gameMap, h)){
+                    }else if(h.filled == true && selectedUnit.territory.isNeighbor(gameMap, h)){
                         // Neighboring hex of territory, unit can attack this square
                         if(gameMap.getRelativePower(h) < selectedUnit.power){
                             // Unit can attack this square
