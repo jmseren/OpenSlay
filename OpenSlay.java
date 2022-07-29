@@ -135,6 +135,45 @@ public class OpenSlay extends PApplet {
                     t.income();
                 }
             }
+            // If it is a new round, grow the trees and make all units moveable      
+
+            if(turn % players.length == 0){
+                // Store the trees that need to be grown in a hashmap
+                HashMap<Hex, Integer> treesToGrow = new HashMap<Hex, Integer>();
+
+                for(Hex h : gameMap.allHexes()){
+                    h.unitCanMove = true;
+                    if(h.isEmpty()){
+                        // Hex is empty, valid candidate for a tree
+                        int pines = 0;
+                        for(Hex n : gameMap.getNeighbors(h)){
+                            if(n.code == 3 && gameMap.onCoast(h)){
+                                // A palm tree should be grown
+                                treesToGrow.put(h, 3);
+                                break;
+                            }else if(n.code == 2){
+                                // Add a tally to pine tree neighbors
+                                pines++;
+                            }
+
+                            if(pines >= 2){
+                                // A pine tree should be grown
+                                treesToGrow.put(h, 2);
+                                break;
+                            }
+                            
+                        }
+                    }
+
+
+                    
+                }
+
+                // Grow the trees
+                for(Hex h : treesToGrow.keySet()){
+                    h.code = treesToGrow.get(h);
+                }
+            }
         }
         // Set game state back
         gameState = GameState.GAME;
@@ -204,7 +243,7 @@ public class OpenSlay extends PApplet {
                             h.setUnit(selectedUnit);
                             h.unitCanMove = false;
                             selectedUnit = null;
-                            refreshMap();
+                            refresh = true;
                         }
                     }
                 }

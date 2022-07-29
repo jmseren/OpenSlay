@@ -71,6 +71,10 @@ public class HexMap {
         return pos.x >= 0 && pos.x < this.width && pos.y >= 0 && pos.y < this.height;
     }
 
+    public boolean onCoast(Hex h){
+        return getNeighbors(h).length < 6;
+    }
+
     public ArrayList<Hex> allHexes(){
         ArrayList<Hex> hexes = new ArrayList<Hex>();
         for(int x = 0; x < this.width; x++){

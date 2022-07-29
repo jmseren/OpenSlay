@@ -60,6 +60,7 @@ public class Territory {
         return false;
     }
     public void income(){
+        if(this.size() < 2) return;
         int profit = 0;
         int wages = 0;
         for(Hex h : tiles){
