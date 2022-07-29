@@ -47,7 +47,7 @@ public class OpenSlay extends PApplet {
         PApplet.main(appletArgs);
     }
     public void settings(){
-        //fullScreen();
+        // fullScreen();
         size(1280,720);
         noSmooth();
     }
@@ -79,8 +79,8 @@ public class OpenSlay extends PApplet {
             case INIT_GAME:
                 initGame();
                 break;
-            case NEW_TURN:
-                newTurn();
+            case NEXT_TURN:
+                nextTurn();
                 break;
             case GAME:
                 ingame();
@@ -117,7 +117,27 @@ public class OpenSlay extends PApplet {
 
         gameState = GameState.GAME;
     }
-    public void newTurn(){
+    public void nextTurn(){
+        turn++;
+        // Reset selected hex
+        selectedHex = null;
+        selectedTerritory = null;
+        selectedUnit = null;
+        // Set current player
+        currPlayer = players[turn % players.length];
+        // Refresh map
+        refreshMap();
+        // If it is the second round, calculate the income for the new player
+        int round = turn / players.length;
+        if(round >= 1){
+            for(Territory t : currTerritories){
+                if(t.owner == currPlayer){
+                    t.income();
+                }
+            }
+        }
+        // Set game state back
+        gameState = GameState.GAME;
 
     }
     public void ingame(){
@@ -188,6 +208,10 @@ public class OpenSlay extends PApplet {
                         }
                     }
                 }
+                if(mouseX >=  width-(width * .25f) + (width * 0.25f / 2) -( width * .2f) / 2&&  mouseX <= width-(width * .25f) + (width * 0.25f / 2) + (width * .2f) / 2 && mouseY >= height - (height / 10) - height / 20 &&  mouseY <= height - (height / 10) + height / 20){
+                    // Player has clicked the end turn button
+                    gameState = GameState.NEXT_TURN;
+                }
                 
                 
                 break;
@@ -214,7 +238,7 @@ public class OpenSlay extends PApplet {
         }
         return closestHex;
     }
-
+    
     // File IO Functions
 
     // Asset loading
@@ -311,7 +335,13 @@ public class OpenSlay extends PApplet {
             }
         }
 
+        // End Turn Button
+        rectMode(CENTER);
+        fill(127, 127, 127);
+        rect(width-(width * .25f) + (width * 0.25f / 2), height - (height / 10), width * .2f, height / 10, 10);
+        fill(0,0,0);
         text("End Turn", width-(width * .25f) + (width * 0.25f / 2), height - (height / 10));
+        rectMode(CORNER);
 
     }
     public void drawMap(HexMap map){
@@ -397,7 +427,7 @@ public class OpenSlay extends PApplet {
     public enum GameState {
         MENU,
         INIT_GAME,
-        NEW_TURN,
+        NEXT_TURN,
         GAME,
         PAUSE,
         END

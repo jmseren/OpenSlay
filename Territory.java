@@ -1,11 +1,15 @@
 import java.util.*;
 
 public class Territory {
+    public Player owner;
     ArrayList<Hex> tiles = new ArrayList<Hex>();
     public Territory(Hex origin) {
+        // Set the owner to the origins owner
+        this.owner = origin.owner;
+        
         // Create an array list to store the unchecked tiles in
         ArrayList<Hex> toCheck = new ArrayList<Hex>();
-
+        
         // Start with the origin
         toCheck.add(origin);
 
@@ -54,5 +58,37 @@ public class Territory {
             if(tiles.contains(n)) return true;
         }
         return false;
+    }
+    public void income(){
+        int profit = 0;
+        int wages = 0;
+        for(Hex h : tiles){
+            switch(h.code){
+                case 1:
+                    profit++;
+                    break;
+                case 4:
+                    // Peasant
+                    profit++;
+                    wages += 2;
+                    break;
+                case 5:
+                    // Spearman
+                    profit++;
+                    wages += 6;
+                    break;
+                case 6:
+                    // Knight
+                    profit++;
+                    wages += 18;
+                    break;
+                case 7:
+                    // Baron
+                    profit++;
+                    wages += 54;
+                    break;
+            }
+        }
+        this.getCapital().gold += profit - wages;
     }
 }
