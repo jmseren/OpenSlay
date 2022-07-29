@@ -211,7 +211,7 @@ public class OpenSlay extends PApplet {
                         selectedHex = null;
                         selectedUnit = null;
                     }
-                }else if(h != null && h.code >= 4 && h.unitCanMove){
+                }else if(selectedUnit == null && h != null && h.code >= 4 && h.unitCanMove){
                     // Player has clicked on a unit
                     selectedUnit = h.getUnit();
                     selectedTerritory = null;
@@ -234,6 +234,13 @@ public class OpenSlay extends PApplet {
                         h.setUnit(selectedUnit);
 
                         selectedUnit = null;
+
+                    }else if(h.code == 2 || h.code == 3 && h.territory == selectedUnit.territory){
+                        // Unit has destroyed a tree
+                        h.setUnit(selectedUnit);
+                        h.unitCanMove = false;
+                        selectedUnit = null;
+                        refresh = true;
 
                     }else if(selectedUnit.territory.isNeighbor(gameMap, h)){
                         // Neighboring hex of territory, unit can attack this square
