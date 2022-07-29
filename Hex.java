@@ -54,7 +54,15 @@ public class Hex {
     public int unitPowerToCode(int power){
         return power + 3;
     }
+    public boolean combineUnit(Unit u){
+        int newCode = this.code + u.power;
+        
+        // Check if the new power would be higher than the max unit
+        if(codeToUnitPower(newCode) > 7) return false;
 
+        this.code = newCode;
+        return true;
+    }
     public boolean isEmpty(){
         // Returns whether or not the hex has a unit or tree on it
         return this.code == 1 && !this.capital;

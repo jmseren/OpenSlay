@@ -62,6 +62,9 @@ public class OpenSlay extends PApplet {
         importTexture("palm", "./textures/palm.png", (int)(hexSize * 0.75));
         importTexture("capital", "./textures/capital.png", (int)(hexSize * 0.75));
         importTexture("peasant", "./textures/peasant.png", (int)(hexSize * 0.75));
+        importTexture("spearman", "./textures/spearman.png", (int)(hexSize * 0.75));
+        importTexture("knight", "./textures/knight.png", (int)(hexSize * 0.75));
+        importTexture("baron", "./textures/baron.png", (int)(hexSize * 0.75));
         gameMap = loadMap("map.slay");
 
         // Create Players
@@ -212,8 +215,16 @@ public class OpenSlay extends PApplet {
                         selectedUnit = null;
                     }
                 }else if(selectedUnit == null && h != null && h.code >= 4 && h.unitCanMove){
-                    // Player has clicked on a unit
+                    // Player has selected a unit
                     selectedUnit = h.getUnit();
+                    selectedTerritory = null;
+                    selectedHex = null;
+                }else if(selectedUnit != null && h != null && h.code >= 4){
+                    // Player has attempted to combine units
+                    if(h.combineUnit(selectedUnit)){
+                        // Unit combination successful
+                        selectedUnit = null;
+                    }
                     selectedTerritory = null;
                     selectedHex = null;
                 }else if(selectedTerritory != null){
@@ -235,7 +246,7 @@ public class OpenSlay extends PApplet {
 
                         selectedUnit = null;
 
-                    }else if(h.code == 2 || h.code == 3 && h.territory == selectedUnit.territory){
+                    }else if((h.code == 2 || h.code == 3) && h.territory == selectedUnit.territory){
                         // Unit has destroyed a tree
                         h.setUnit(selectedUnit);
                         h.unitCanMove = false;
@@ -439,6 +450,16 @@ public class OpenSlay extends PApplet {
             case 4:
                 image(textures.get("peasant"), x + playAreaOffset.x, y + playAreaOffset.y);
                 break;
+            case 5:
+                image(textures.get("spearman"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
+            case 6:
+                image(textures.get("knight"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
+            case 7:
+                image(textures.get("baron"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
+            
         }
         if(hex.capital) image(textures.get("capital"), x + playAreaOffset.x, y + playAreaOffset.y);
     }
