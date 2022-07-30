@@ -55,14 +55,7 @@ public class OpenSlay extends PApplet {
         textAlign(CENTER, CENTER);
         font = createFont("fonts/pixeloidsans.ttf", 32);
         textFont(font, 32);
-        importTexture("background", "textures/bg.png", 32);
-        importTexture("pine", "textures/pine.png", (int)(hexSize * 0.75));
-        importTexture("palm", "textures/palm.png", (int)(hexSize * 0.75));
-        importTexture("capital", "textures/capital.png", (int)(hexSize * 0.75));
-        importTexture("peasant", "textures/peasant.png", (int)(hexSize * 0.75));
-        importTexture("spearman", "textures/spearman.png", (int)(hexSize * 0.75));
-        importTexture("knight", "textures/knight.png", (int)(hexSize * 0.75));
-        importTexture("baron", "textures/baron.png", (int)(hexSize * 0.75));
+        loadTextures();
         gameMap = loadMap(this.getClass().getResourceAsStream("/maps/map.slay"));
 
         // Create Players
@@ -369,6 +362,7 @@ public class OpenSlay extends PApplet {
                 y++;
             }
             lineScanner.close();
+            loadTextures();
             return map;
         }catch(Exception e){
             System.out.println("Error loading map: " + e.getMessage());
@@ -379,7 +373,17 @@ public class OpenSlay extends PApplet {
         return loadMap(new FileInputStream(mapFile));
     }
 
-
+    public void loadTextures(){
+        textures.clear();
+        importTexture("background", "textures/bg.png", 32);
+        importTexture("pine", "textures/pine.png", (int)(hexSize * 0.85));
+        importTexture("palm", "textures/palm.png", (int)(hexSize * 0.85));
+        importTexture("capital", "textures/capital.png", (int)(hexSize * 0.85));
+        importTexture("peasant", "textures/peasant.png", (int)(hexSize * 0.85));
+        importTexture("spearman", "textures/spearman.png", (int)(hexSize * 0.85));
+        importTexture("knight", "textures/knight.png", (int)(hexSize * 0.85));
+        importTexture("baron", "textures/baron.png", (int)(hexSize * 0.85));
+    }
 
 
     // Drawing Functions
