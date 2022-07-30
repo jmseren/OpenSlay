@@ -48,3 +48,27 @@ Palm trees (Cacti in OpenSlay) grow on coastal hexes adjacent to another palm tr
 Move or place a unit on a tree to chop it down. This uses up the unit for the turn.
 
 Tree growth can rapidly get out of hand, so don't shrug them off!
+
+### Maps
+
+Maps are held inside of a .slay type file. Anyone can create a map, and you can use the default maps held in the repository to see how you can do so.
+
+Anything in square brackets is a comment/title.
+
+After this, the first line is the map dimensions in width and height separated by a space.
+
+On the next line is the hex size in pixels
+
+Next, you will add the offset from the top left of the screen in pixels.
+
+After this, you can see there is a grid of numbers. 
+
+0 = Water
+
+1 = Land
+
+2 = Pine Tree
+
+3 = Palm tree
+
+This should be enough information for you to start building maps of your own!
