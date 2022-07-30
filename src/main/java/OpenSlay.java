@@ -63,7 +63,7 @@ public class OpenSlay extends PApplet {
         importTexture("spearman", "textures/spearman.png", (int)(hexSize * 0.75));
         importTexture("knight", "textures/knight.png", (int)(hexSize * 0.75));
         importTexture("baron", "textures/baron.png", (int)(hexSize * 0.75));
-        gameMap = loadMap("../maps/map.slay");
+        gameMap = loadMap(this.getClass().getResourceAsStream("/maps/map.slay"));
 
         // Create Players
         for(int i = 0; i < playerColors.length; i++){
@@ -257,6 +257,7 @@ public class OpenSlay extends PApplet {
                         // Neighboring hex of territory, unit can attack this square
                         if(gameMap.getRelativePower(h) < selectedUnit.power){
                             // Unit can attack this square
+
                             h.setOwner(currPlayer);
                             h.setUnit(selectedUnit);
                             h.unitCanMove = false;
@@ -309,24 +310,47 @@ public class OpenSlay extends PApplet {
     // 0 = water
     // 1 = land
     // 2 = pine
-    // 3 = palm
-    public HexMap loadMap(String mapFile){
+    // 3 = Palm
+    public HexMap loadMap(InputStream is){
         try{
             HexMap map = null;
-            File file = new File(mapFile);
-            Scanner lineScanner = new Scanner(file);
+            //File file = new File(mapFile);
+            Scanner lineScanner = new Scanner(is);
 
-            // Load size of map
+            // Load dimensions of map
             while(lineScanner.hasNextLine()){
                 String line = lineScanner.nextLine();
                 String[] lineSplit = line.split(" ");
                 if(line.charAt(0) == '[') continue; // This line is the header or a comment.
                 if(line.charAt(0) == '#') continue; // This line is a comment.
-                if(lineSplit.length != 2) throw new Exception("Invalid map file: size line is invalid.");
+                if(lineSplit.length != 2) throw new Exception("Invalid map file: dimension line is invalid.");
                 map = new HexMap(Integer.parseInt(lineSplit[0]), Integer.parseInt(lineSplit[1]));   
                 break;
             }
             if(map == null) throw new Exception("Invalid map file: size line not found.");
+
+            // Load hex size
+            while(lineScanner.hasNextLine()){
+                String line = lineScanner.nextLine();
+                String[] lineSplit = line.split(" ");
+                if(line.charAt(0) == '[') continue; // This line is the header or a comment.
+                if(line.charAt(0) == '#') continue; // This line is a comment.
+                if(lineSplit.length != 1) throw new Exception("Invalid map file: hex size line is invalid.");
+                hexSize = Integer.parseInt(lineSplit[0]);
+                break;
+            }
+
+            // Load offset values
+            while(lineScanner.hasNextLine()){
+                String line = lineScanner.nextLine();
+                String[] lineSplit = line.split(" ");
+                if(line.charAt(0) == '[') continue; // This line is the header or a comment.
+                if(line.charAt(0) == '#') continue; // This line is a comment.
+                if(lineSplit.length != 2) throw new Exception("Invalid map file: offset line is invalid.");
+                playAreaOffset.x = Integer.parseInt(lineSplit[0]);
+                playAreaOffset.y = Integer.parseInt(lineSplit[1]);
+                break;
+            }
 
             // Load tile data from map file
             int x = 0;
@@ -341,7 +365,7 @@ public class OpenSlay extends PApplet {
                     map.hexes[x][y] = new Hex(x, y, Integer.parseInt(s));
                     x++;
                 }
-                x=0;
+                x = 0;
                 y++;
             }
             lineScanner.close();
@@ -350,6 +374,9 @@ public class OpenSlay extends PApplet {
             System.out.println("Error loading map: " + e.getMessage());
             return null;
         }
+    }
+    public HexMap loadMap(String mapFile) throws FileNotFoundException{
+        return loadMap(new FileInputStream(mapFile));
     }
 
 
