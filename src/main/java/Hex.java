@@ -1,5 +1,3 @@
-import java.util.*;
-
 public class Hex {
     public int x;
     public int y;

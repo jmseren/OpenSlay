@@ -63,7 +63,7 @@ public class OpenSlay extends PApplet {
         importTexture("spearman", "textures/spearman.png", (int)(hexSize * 0.75));
         importTexture("knight", "textures/knight.png", (int)(hexSize * 0.75));
         importTexture("baron", "textures/baron.png", (int)(hexSize * 0.75));
-        gameMap = loadMap("map.slay");
+        gameMap = loadMap("../maps/map.slay");
 
         // Create Players
         for(int i = 0; i < playerColors.length; i++){
@@ -85,6 +85,8 @@ public class OpenSlay extends PApplet {
                 break;
             case GAME:
                 ingame();
+                break;
+            default:
                 break;
         }
     }
@@ -342,6 +344,7 @@ public class OpenSlay extends PApplet {
                 x=0;
                 y++;
             }
+            lineScanner.close();
             return map;
         }catch(Exception e){
             System.out.println("Error loading map: " + e.getMessage());

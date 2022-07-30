@@ -28,16 +28,31 @@ public class Territory {
             toCheck.remove(0);
         }
         
-        // If the territory doesn't have a capital, set it to the first tile
-        if(tiles.size() >= 2 && this.getCapital() == null){
-            for(Hex tile : tiles){
-                if(tile.code == 1){
-                    setCapital(tile);
-                    break;
+        // If the territory size is greater than 1, check if it has a capital, or more than 1 capital
+        if(tiles.size() >= 2){
+            int capitals = this.numCapitals();
+            if(capitals == 0){
+                for(Hex tile : tiles){
+                    if(tile.code == 1){
+                        setCapital(tile);
+                        break;
+                    }
                 }
+            }else if(capitals > 1){
+                // If there os more than one capital choose the capital with more money
+                // Add the money from the second capital to the first capital
+                Hex c = this.getCapital();
+                for(Hex h : tiles){
+                    if(h == c) continue;
+                    if(h.capital){
+                        c.gold += h.gold;
+                        h.gold = 0;
+                        h.capital = false;
+                    }
+                }
+
             }
         }
-        
         
     }
     public Hex getCapital() {
@@ -45,6 +60,30 @@ public class Territory {
             if(h.capital) return h;
         }
         return null;
+    }
+    public void moveCapital() {
+        Hex c = this.getCapital();
+        if(this.size() == 2){
+            c.gold = 0;
+            c.capital = false;
+            return;
+        }
+        for(Hex h : tiles) {
+            if(h == c) continue;
+            h.capital = true;
+            h.gold = c.gold;
+            c.gold = 0;
+            c.capital = false;
+            return;
+        }
+
+    }
+    public int numCapitals() {
+        int count = 0;
+        for(Hex h : tiles) {
+            if(h.capital) count++;
+        }
+        return count;
     }
     public void setCapital(Hex c){
         c.capital = true;

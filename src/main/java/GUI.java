@@ -15,7 +15,11 @@ public abstract class GUI {
     
     public abstract void onClick();
 
-    public boolean isClicked(int x, int y){
-        return x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height;
-    };
+    public boolean click(int x, int y){
+        if( x >= this.x && x <= this.x + this.width && y >= this.y && y <= this.y + this.height){
+            onClick();
+            return true;
+        }
+        return false;
+    }
 }
