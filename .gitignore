@@ -27,7 +27,7 @@ hs_err_pid*
 *.bat
 
 # Map files
-*.slay
+# *.slay
 
 # Other
 .DS_STORE
