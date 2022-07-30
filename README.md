@@ -24,8 +24,11 @@ To gain access to higher power units, you must combine them by place one atop an
 Be warned, as you must pay drastically higher wages for the more powerful units. Power and wages are as follows:
 
 Peasant: 2 / 1
+
 Spearman: 6 / 2
+
 Knight: 18 / 3
+
 Baron: 54 / 4
 
 A unit can move infinitely within its territory, as long as it does not perform an action. Units can also move after merging, as long as they both are still able to be moved.
@@ -35,6 +38,7 @@ A unit can move infinitely within its territory, as long as it does not perform 
 All units, capitals, and forts create a bubble of defense for the tiles around them. Your units can only move on hexes adjacent to your territory that are undefended, or under-defended. Your unit must have at least one higher strength to overpower a defended hex. Capitals count as 2 strength, while forts count as 3.
 
 ### Trees
+
 Trees are an environmental factor of OpenSlay, which prevent the player from earning income from a hex.
 
 Pine trees will grow on a hex adjacent to two other pine trees.
@@ -44,4 +48,3 @@ Palm trees (Cacti in OpenSlay) grow on coastal hexes adjacent to another palm tr
 Move or place a unit on a tree to chop it down. This uses up the unit for the turn.
 
 Tree growth can rapidly get out of hand, so don't shrug them off!
-
