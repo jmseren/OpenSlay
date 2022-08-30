@@ -1,5 +1,7 @@
 ShuffleBag.class
+Events.class
 HexMap.class
+EventHandler.class
 Color.class
 OpenSlay$GameState.class
 OpenSlay$1.class
@@ -7,6 +9,8 @@ Hex.class
 Player.class
 Pos.class
 GUI.class
+Event.class
 Unit.class
 OpenSlay.class
 Territory.class
+ImageButton.class

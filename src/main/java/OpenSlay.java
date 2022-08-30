@@ -12,7 +12,11 @@ public class OpenSlay extends PApplet {
     // Global Static Variables
     public static PFont font;
     public static HashMap<String, PImage> textures = new HashMap<String, PImage>();
+    public static HashMap<String, GUI> guiElements;
+    public static EventHandler eventHandler = new EventHandler();
     public static int hexSize = 32;
+
+    // For now, we will automatically assume we have as many players as there are colors
     public static Color[] playerColors = {
         new Color(50, 168, 82),
         new Color(0, 127, 200),
@@ -21,8 +25,8 @@ public class OpenSlay extends PApplet {
     };
     public static Player[] players = new Player[playerColors.length];
     public static Player currPlayer;
-    public static HexMap gameMap;
 
+    public static HexMap gameMap;
 
     // Global Variables
     public GameState gameState = GameState.INIT_GAME;
@@ -87,6 +91,7 @@ public class OpenSlay extends PApplet {
     // In-Game Functions
     public void initGame(){
         // Randomize players territories
+        guiElements = new HashMap<String, GUI>();
         ShuffleBag<Player> playerBag = new ShuffleBag<Player>();
         for(Player p : players){
             playerBag.add(p, 2);
@@ -110,6 +115,13 @@ public class OpenSlay extends PApplet {
                 capital.gold = 10;
             }
         }
+        
+        // Initialize the GUI
+
+        // Add the peasant button
+        PImage peasantTexture = textures.get("peasant_disabled");
+        ImageButton peasantButton = new ImageButton("peasant_button", peasantTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 2, peasantTexture.width * 2, peasantTexture.height * 2, Events.PEASANT);
+        guiElements.put(peasantButton.name, peasantButton);
 
         gameState = GameState.GAME;
     }
@@ -132,6 +144,7 @@ public class OpenSlay extends PApplet {
                 }
             }
             // If it is a new round, grow the trees and make all units moveable      
+            // EDIT: This is WRONG, the original game did this on a turn by turn basis in your own territory only
 
             if(turn % players.length == 0){
                 // Store the trees that need to be grown in a hashmap
@@ -179,8 +192,30 @@ public class OpenSlay extends PApplet {
         if(refresh) refreshMap();
         drawToolBar();
         drawMap(gameMap);
+        drawGUI();
         drawUnit();
+        processEvents();
 
+    }
+    public void processEvents(){
+        while(eventHandler.queueSize() > 0){
+            Event e = eventHandler.nextEvent();
+            switch(e.getEventType()){
+                case PEASANT:
+                    // Player has attempted to purchase a peasant
+                    if(selectedTerritory != null && selectedUnit == null && selectedTerritory.getCapital().gold >= 10){
+                        selectedUnit = new Unit(1, selectedTerritory);
+                        selectedTerritory.getCapital().gold -= 10;
+                        selectedTerritory = null;
+                        selectedHex = null;
+                        guiElements.get("peasant_button").texture = textures.get("peasant_disabled");
+                    }
+                    break;
+                case NO_EVENT:
+                default:
+                    break;
+            }
+        }
     }
     public void refreshMap(){
         ArrayList<Hex> hexes = gameMap.allHexes();
@@ -195,8 +230,10 @@ public class OpenSlay extends PApplet {
         refresh = false;
     }
 
-
     public void mousePressed(){
+        for(GUI g : guiElements.values()){
+            if(g.click(mouseX, mouseY)) eventHandler.pushEvent(g.onClick());
+        }
         switch(gameState){
             case GAME:
                 Hex h = getClosestHex();
@@ -206,13 +243,17 @@ public class OpenSlay extends PApplet {
                         selectedTerritory = h.territory;
                         selectedHex = null;
                         selectedUnit = null;
+                        break;
                     }
-                }else if(selectedUnit == null && h != null && h.code >= 4 && h.unitCanMove){
+                }
+                if(selectedUnit == null && h != null && h.code >= 4 && h.unitCanMove && h.owner == currPlayer){
                     // Player has selected a unit
                     selectedUnit = h.getUnit();
                     selectedTerritory = null;
                     selectedHex = null;
-                }else if(selectedUnit != null && h != null && h.code >= 4){
+                    break;
+                }
+                if(selectedUnit != null && h != null && h.code >= 4){
                     // Player has attempted to combine units
                     if(h.combineUnit(selectedUnit)){
                         // Unit combination successful
@@ -220,33 +261,29 @@ public class OpenSlay extends PApplet {
                     }
                     selectedTerritory = null;
                     selectedHex = null;
-                }else if(selectedTerritory != null){
-                    // Check if the player has clicked on the unit in the toolbar
-                    if(dist(mouseX, mouseY, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2) < textures.get("peasant").width && selectedTerritory.getCapital().gold >= 10){
-                        selectedUnit = new Unit(1, selectedTerritory);
-                        selectedTerritory.getCapital().gold -= 10;
-                        selectedTerritory = null;
-                        selectedHex = null;
-                    }
-                    
-                }else if(selectedUnit != null && h != null){
+                    break;
+                }
+                if(selectedUnit != null && h != null){
                     // Player has attempted to place a unit
                     if(h.isEmpty() && h.territory == selectedUnit.territory){
                         /// Valid territory for the unit
                         selectedHex = null;
                         selectedTerritory = selectedUnit.territory;
                         h.setUnit(selectedUnit);
-
                         selectedUnit = null;
+                        break;
 
-                    }else if((h.code == 2 || h.code == 3) && h.territory == selectedUnit.territory){
+                    }
+                    if((h.code == 2 || h.code == 3) && h.territory == selectedUnit.territory){
                         // Unit has destroyed a tree
                         h.setUnit(selectedUnit);
                         h.unitCanMove = false;
                         selectedUnit = null;
                         refresh = true;
+                        break;
 
-                    }else if(h.filled == true && selectedUnit.territory.isNeighbor(gameMap, h)){
+                    }
+                    if(h.filled == true && selectedUnit.territory.isNeighbor(gameMap, h)){
                         // Neighboring hex of territory, unit can attack this square
                         if(gameMap.getRelativePower(h) < selectedUnit.power){
                             // Unit can attack this square
@@ -257,8 +294,10 @@ public class OpenSlay extends PApplet {
                             selectedUnit = null;
                             refresh = true;
                         }
+                        break;
                     }
                 }
+
                 if(mouseX >=  width-(width * .25f) + (width * 0.25f / 2) -( width * .2f) / 2&&  mouseX <= width-(width * .25f) + (width * 0.25f / 2) + (width * .2f) / 2 && mouseY >= height - (height / 10) - height / 20 &&  mouseY <= height - (height / 10) + height / 20){
                     // Player has clicked the end turn button
                     gameState = GameState.NEXT_TURN;
@@ -268,6 +307,11 @@ public class OpenSlay extends PApplet {
                 break;
         }
     }
+
+    // Event handling
+
+
+    // User Input Functions
 
     // Definitely not the best way, but the quickest solution I could think of to get going
     public Hex getClosestHex(){
@@ -288,6 +332,148 @@ public class OpenSlay extends PApplet {
             return null;
         }
         return closestHex;
+    }
+
+    // Drawing Functions
+    public void drawBackground(){
+        imageMode(CORNER);
+        int size = textures.get("background").width;
+        for(int x = 0; x < width; x += size){
+            for(int y = 0; y < height; y += size){
+                image(textures.get("background"), x, y);
+            }
+        }
+        imageMode(CENTER);
+    }
+    public void drawToolBar(){
+        fill(161, 161, 161);
+        rect(width-(width * .25f), 0, width * 0.25f, height);
+        fill(0, 0, 0);
+        text("OpenSlay", width-(width * .25f) + (width * 0.25f / 2), height / 10);
+
+
+        if(selectedTerritory != null){
+            int gold = selectedTerritory.getCapital().gold;
+            text("Gold: " + gold, width-(width * .25f) + (width * 0.25f / 2), height / 10 + (height / 10) * 1);
+            if(gold >= 10){
+                PImage peasant = textures.get("peasant");
+                guiElements.get("peasant_button").texture = peasant;
+                //image(peasant, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2, peasant.width * 2, peasant.height * 2);
+
+            }else{
+                PImage peasant = textures.get("peasant");
+                
+                // Create a PGraphics object so that we can use a filter on it
+                PGraphics g = createGraphics(peasant.width * 2, peasant.height * 2);
+                g.beginDraw();
+                g.image(peasant, 0, 0, peasant.width * 2, peasant.height * 2);
+                g.filter(GRAY);
+                g.endDraw();
+
+                guiElements.get("peasant_button").texture = g;
+            }
+        }
+
+        // End Turn Button
+        rectMode(CENTER);
+        fill(127, 127, 127);
+        rect(width-(width * .25f) + (width * 0.25f / 2), height - (height / 10), width * .2f, height / 10, 10);
+        fill(0,0,0);
+        text("End Turn", width-(width * .25f) + (width * 0.25f / 2), height - (height / 10));
+        rectMode(CORNER);
+
+    }
+    public void drawGUI(){
+        for(GUI g : guiElements.values()){
+            g.draw(this);
+        }
+    }
+    public void drawMap(HexMap map){
+        // ArrayList to store hexes that should be drawn last
+        ArrayList<Hex> differed = new ArrayList<Hex>();
+
+        for(int x = 0; x < map.width; x++){
+            for(int y = 0; y < map.height; y++){
+                Hex hex = map.hexes[x][y];
+
+                if(hex.filled && selectedTerritory != null && hex.territory == selectedTerritory){
+                    differed.add(hex);
+                    continue;
+                }
+                if(hex.filled) drawHex(hex);
+
+
+            }
+        }
+        for(Hex h : differed){
+            drawHex(h);
+        }
+    }
+    public void drawHex(Hex hex){
+        float h = (float)(Math.sqrt(3) * hexSize);
+        int x = (int)(hex.x * (hexSize*2 * 0.75));
+        int y = (int)((float)hex.y * h);
+        if(hex.x % 2 == 1){
+            y += h / 2.0;
+        }
+
+        // Make sure selected hexes get a border
+        boolean selected = false;
+        if(selectedTerritory != null && selectedTerritory == hex.territory){
+            selected = true;
+        }
+        
+
+        fill(hex.color.toProcessingColor());
+        polygon(x + playAreaOffset.x, y + playAreaOffset.y, hexSize, 6, selected);
+
+        switch(hex.code){
+            case 2:
+                image(textures.get("pine"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
+            case 3:
+                image(textures.get("palm"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
+            case 4:
+                image(textures.get("peasant"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
+            case 5:
+                image(textures.get("spearman"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
+            case 6:
+                image(textures.get("knight"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
+            case 7:
+                image(textures.get("baron"), x + playAreaOffset.x, y + playAreaOffset.y);
+                break;
+            
+        }
+        if(hex.capital) image(textures.get("capital"), x + playAreaOffset.x, y + playAreaOffset.y);
+    }
+
+
+    // This method is adapted from the Processing Documentation
+    // https://processing.org/examples/regularpolygon.html
+    public void polygon(int x, int y, int radius, int npoints, boolean highlight){ 
+        float angle = TWO_PI / npoints;
+
+        PShape s = createShape();
+        if(highlight) s.setStroke(255);        
+        
+        s.beginShape();
+        if(highlight) s.strokeWeight(3);
+        for (float a = 0; a < TWO_PI; a += angle) {
+            float sx = x + cos(a) * radius;
+            float sy = y + sin(a) * radius;
+            s.vertex(sx, sy);
+        }
+        s.endShape(CLOSE);
+        shape(s, 0,0);
+    }
+    public void drawUnit(){
+        if(selectedUnit != null){
+            image(selectedUnit.texture, mouseX, mouseY);
+        }
     }
     
     // File IO Functions
@@ -380,149 +566,21 @@ public class OpenSlay extends PApplet {
         importTexture("palm", "textures/palm.png", (int)(hexSize * 0.85));
         importTexture("capital", "textures/capital.png", (int)(hexSize * 0.85));
         importTexture("peasant", "textures/peasant.png", (int)(hexSize * 0.85));
+        // Create disable peasant texture
+        PImage p = textures.get("peasant");
+        PGraphics g = createGraphics(p.width, p.height);
+        g.beginDraw();
+        g.image(p, 0, 0, p.width, p.height);
+        g.filter(GRAY);
+        g.endDraw();
+        textures.put("peasant_disabled", g);
+
         importTexture("spearman", "textures/spearman.png", (int)(hexSize * 0.85));
         importTexture("knight", "textures/knight.png", (int)(hexSize * 0.85));
         importTexture("baron", "textures/baron.png", (int)(hexSize * 0.85));
     }
 
-
-    // Drawing Functions
-    public void drawBackground(){
-        imageMode(CORNER);
-        int size = textures.get("background").width;
-        for(int x = 0; x < width; x += size){
-            for(int y = 0; y < height; y += size){
-                image(textures.get("background"), x, y);
-            }
-        }
-        imageMode(CENTER);
-    }
-    public void drawToolBar(){
-        fill(161, 161, 161);
-        rect(width-(width * .25f), 0, width * 0.25f, height);
-        fill(0, 0, 0);
-        text("OpenSlay", width-(width * .25f) + (width * 0.25f / 2), height / 10);
-
-
-        if(selectedTerritory != null){
-            int gold = selectedTerritory.getCapital().gold;
-            text("Gold: " + gold, width-(width * .25f) + (width * 0.25f / 2), height / 10 + (height / 10) * 1);
-            if(gold >= 10){
-                PImage peasant = textures.get("peasant");
-                image(peasant, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2, peasant.width * 2, peasant.height * 2);
-            }else{
-                PImage peasant = textures.get("peasant");
-                
-                // Create a PGraphics object so that we can use a filter on it
-                PGraphics g = createGraphics(peasant.width * 2, peasant.height * 2);
-                g.beginDraw();
-                g.image(peasant, 0, 0, peasant.width * 2, peasant.height * 2);
-                g.filter(GRAY);
-                g.endDraw();
-
-                image(g, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2);
-            }
-        }
-
-        // End Turn Button
-        rectMode(CENTER);
-        fill(127, 127, 127);
-        rect(width-(width * .25f) + (width * 0.25f / 2), height - (height / 10), width * .2f, height / 10, 10);
-        fill(0,0,0);
-        text("End Turn", width-(width * .25f) + (width * 0.25f / 2), height - (height / 10));
-        rectMode(CORNER);
-
-    }
-    public void drawMap(HexMap map){
-        // ArrayList to store hexes that should be drawn last
-        ArrayList<Hex> differed = new ArrayList<Hex>();
-
-        for(int x = 0; x < map.width; x++){
-            for(int y = 0; y < map.height; y++){
-                Hex hex = map.hexes[x][y];
-
-                if(hex.filled && selectedTerritory != null && hex.territory == selectedTerritory){
-                    differed.add(hex);
-                    continue;
-                }
-                if(hex.filled) drawHex(hex);
-
-
-            }
-        }
-        for(Hex h : differed){
-            drawHex(h);
-        }
-    }
-    public void drawHex(Hex hex){
-        float h = (float)(Math.sqrt(3) * hexSize);
-        int x = (int)(hex.x * (hexSize*2 * 0.75));
-        int y = (int)((float)hex.y * h);
-        if(hex.x % 2 == 1){
-            y += h / 2.0;
-        }
-
-        // Make sure selected hexes get a border
-        boolean selected = false;
-        if(selectedTerritory != null && selectedTerritory == hex.territory){
-            selected = true;
-        }
-        
-
-        fill(hex.color.toProcessingColor());
-        polygon(x + playAreaOffset.x, y + playAreaOffset.y, hexSize, 6, selected);
-
-        switch(hex.code){
-            case 2:
-                image(textures.get("pine"), x + playAreaOffset.x, y + playAreaOffset.y);
-                break;
-            case 3:
-                image(textures.get("palm"), x + playAreaOffset.x, y + playAreaOffset.y);
-                break;
-            case 4:
-                image(textures.get("peasant"), x + playAreaOffset.x, y + playAreaOffset.y);
-                break;
-            case 5:
-                image(textures.get("spearman"), x + playAreaOffset.x, y + playAreaOffset.y);
-                break;
-            case 6:
-                image(textures.get("knight"), x + playAreaOffset.x, y + playAreaOffset.y);
-                break;
-            case 7:
-                image(textures.get("baron"), x + playAreaOffset.x, y + playAreaOffset.y);
-                break;
-            
-        }
-        if(hex.capital) image(textures.get("capital"), x + playAreaOffset.x, y + playAreaOffset.y);
-    }
-
-
-    // This method is adapted from the Processing Documentation
-    // https://processing.org/examples/regularpolygon.html
-    public void polygon(int x, int y, int radius, int npoints, boolean highlight){ 
-        float angle = TWO_PI / npoints;
-
-        PShape s = createShape();
-        if(highlight) s.setStroke(255);        
-        
-        s.beginShape();
-        if(highlight) s.strokeWeight(3);
-        for (float a = 0; a < TWO_PI; a += angle) {
-            float sx = x + cos(a) * radius;
-            float sy = y + sin(a) * radius;
-            s.vertex(sx, sy);
-        }
-        s.endShape(CLOSE);
-        shape(s, 0,0);
-    }
-    public void drawUnit(){
-        if(selectedUnit != null){
-            image(selectedUnit.texture, mouseX, mouseY);
-        }
-    }
-
     // ENUMS
-
     public enum GameState {
         MENU,
         INIT_GAME,
