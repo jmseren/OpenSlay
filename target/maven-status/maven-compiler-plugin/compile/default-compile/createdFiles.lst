@@ -6,6 +6,7 @@ Color.class
 OpenSlay$GameState.class
 OpenSlay$1.class
 Hex.class
+TextElement.class
 Player.class
 Pos.class
 GUI.class
@@ -14,3 +15,4 @@ Unit.class
 OpenSlay.class
 Territory.class
 ImageButton.class
+TextButton.class

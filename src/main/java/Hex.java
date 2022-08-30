@@ -9,6 +9,7 @@ public class Hex {
     boolean filled;
     int code;
 
+    public boolean castle = false;
 
     // Capital hex variables
     public boolean capital = false;
@@ -32,7 +33,12 @@ public class Hex {
         return u;
     }
     public void setUnit(Unit unit){
-        this.code = unitPowerToCode(unit.power);
+        int unitcode = unitPowerToCode(unit.power);
+
+        // If the unit is a castle, change the castle variable
+        this.castle = false;
+        this.capital = false;
+        this.code = unitcode;
     }
     public Player getOwner(){
         return this.owner;
@@ -43,7 +49,7 @@ public class Hex {
     }
 
     public int codeToUnitPower(int code){
-        return Math.max(code - 3, this.capital ? 1 : 0);
+        return Math.max(code - 3, this.capital || this.castle ? 1 : 0);
     }
     public int codeToUnitPower(){
         return codeToUnitPower(this.code);

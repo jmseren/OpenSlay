@@ -23,6 +23,9 @@ public class Unit {
             case 4:
                 texture = OpenSlay.textures.get("baron");
                 break;
+            case 5:
+                texture = OpenSlay.textures.get("castle");
+                break;
         }
     }
 }

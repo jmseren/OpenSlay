@@ -29,7 +29,7 @@ public class OpenSlay extends PApplet {
     public static HexMap gameMap;
 
     // Global Variables
-    public GameState gameState = GameState.INIT_GAME;
+    public GameState gameState = GameState.MENU;
 
     public ArrayList<Territory> currTerritories;
 
@@ -67,6 +67,14 @@ public class OpenSlay extends PApplet {
             players[i] = new Player(playerColors[i]);
         }
         currPlayer = players[0];
+
+        // Setup Menu GUI
+        guiElements = new HashMap<String, GUI>();
+        TextElement title = new TextElement("OpenSlay", width/2, height/2 - 100);
+        TextButton startButton = new TextButton("Start", width/2, height/2, 200, 50, new Event(Events.CHANGE_STATE, GameState.INIT_GAME));
+        guiElements.put("title", title);
+        guiElements.put("startButton", startButton);
+
     }
 
 
@@ -74,6 +82,9 @@ public class OpenSlay extends PApplet {
         background(0, 0, 255);
         drawBackground();
         switch(gameState){
+            case MENU:
+                menu();
+                break;
             case INIT_GAME:
                 initGame();
                 break;
@@ -89,6 +100,11 @@ public class OpenSlay extends PApplet {
     }
 
     // In-Game Functions
+    public void menu(){
+        drawBackground();
+        drawGUI();
+        processEvents();
+    }
     public void initGame(){
         // Randomize players territories
         guiElements = new HashMap<String, GUI>();
@@ -122,6 +138,11 @@ public class OpenSlay extends PApplet {
         PImage peasantTexture = textures.get("peasant_disabled");
         ImageButton peasantButton = new ImageButton("peasant_button", peasantTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 2, peasantTexture.width * 2, peasantTexture.height * 2, Events.PEASANT);
         guiElements.put(peasantButton.name, peasantButton);
+
+        // Add the castle button
+        PImage castleTexture = textures.get("castle_disabled");
+        ImageButton castleButton = new ImageButton("castle_button", castleTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 4, castleTexture.width * 2, castleTexture.height * 2, Events.CASTLE);
+        guiElements.put(castleButton.name, castleButton);
 
         gameState = GameState.GAME;
     }
@@ -214,6 +235,21 @@ public class OpenSlay extends PApplet {
                         selectedHex = null;
                         guiElements.get("peasant_button").texture = textures.get("peasant_disabled");
                     }
+                    break;
+                case CASTLE:
+                    // Player has attempted to purchase a castle
+                    if(selectedTerritory != null && selectedUnit == null && selectedTerritory.getCapital().gold >= 20){
+                        selectedUnit = new Unit(5, selectedTerritory);
+                        selectedTerritory.getCapital().gold -= 15;
+                        selectedTerritory = null;
+                        selectedHex = null;
+                        guiElements.get("castle_button").texture = textures.get("castle_disabled");
+                    }
+                    break;
+                case CHANGE_STATE:
+                    // Change the game state
+                    gameState = (GameState)(e.getEventData());
+                    
                     break;
                 case NO_EVENT:
                 default:
@@ -359,32 +395,22 @@ public class OpenSlay extends PApplet {
         if(selectedTerritory != null){
             int gold = selectedTerritory.getCapital().gold;
             text("Gold: " + gold, width-(width * .25f) + (width * 0.25f / 2), height / 10 + (height / 10) * 1);
+            
+            // Set the buttons to their proper colors depending on territory's gold
             if(gold >= 10){
-                PImage peasant = textures.get("peasant");
-                guiElements.get("peasant_button").texture = peasant;
-                //image(peasant, width-(width * 0.25f) + (width * 0.25f / 2), height / 10 + (height /10) * 2, peasant.width * 2, peasant.height * 2);
-
+                guiElements.get("peasant_button").texture = textures.get("peasant");
+                if(gold >= 15){
+                    guiElements.get("castle_button").texture = textures.get("castle");
+                }else {
+                    guiElements.get("castle_button").texture = textures.get("castle_disabled");
+                }
             }else{
-                PImage peasant = textures.get("peasant");
-                
-                // Create a PGraphics object so that we can use a filter on it
-                PGraphics g = createGraphics(peasant.width * 2, peasant.height * 2);
-                g.beginDraw();
-                g.image(peasant, 0, 0, peasant.width * 2, peasant.height * 2);
-                g.filter(GRAY);
-                g.endDraw();
-
-                guiElements.get("peasant_button").texture = g;
+                guiElements.get("peasant_button").texture = textures.get("peasant_disabled");
             }
         }
 
         // End Turn Button
-        rectMode(CENTER);
-        fill(127, 127, 127);
-        rect(width-(width * .25f) + (width * 0.25f / 2), height - (height / 10), width * .2f, height / 10, 10);
-        fill(0,0,0);
-        text("End Turn", width-(width * .25f) + (width * 0.25f / 2), height - (height / 10));
-        rectMode(CORNER);
+        
 
     }
     public void drawGUI(){
@@ -453,6 +479,7 @@ public class OpenSlay extends PApplet {
             
         }
         if(hex.capital) image(textures.get("capital"), x + playAreaOffset.x, y + playAreaOffset.y);
+        if(hex.castle) image(textures.get("castle"), x + playAreaOffset.x, y + playAreaOffset.y);
     }
 
 
@@ -570,7 +597,7 @@ public class OpenSlay extends PApplet {
         importTexture("palm", "textures/palm.png", (int)(hexSize * 0.85));
         importTexture("capital", "textures/capital.png", (int)(hexSize * 0.85));
         importTexture("peasant", "textures/peasant.png", (int)(hexSize * 0.85));
-        // Create disable peasant texture
+        // Create disabled peasant texture
         PImage p = textures.get("peasant");
         PGraphics g = createGraphics(p.width, p.height);
         g.beginDraw();
@@ -582,6 +609,16 @@ public class OpenSlay extends PApplet {
         importTexture("spearman", "textures/spearman.png", (int)(hexSize * 0.85));
         importTexture("knight", "textures/knight.png", (int)(hexSize * 0.85));
         importTexture("baron", "textures/baron.png", (int)(hexSize * 0.85));
+
+        importTexture("castle", "textures/fort.png", (int)(hexSize * 0.85));
+        // Create disabled castle texture
+        PImage f = textures.get("castle");
+        g = createGraphics(f.width, f.height);
+        g.beginDraw();
+        g.image(f, 0, 0, f.width, f.height);
+        g.filter(GRAY);
+        g.endDraw();
+        textures.put("castle_disabled", g);
     }
 
     // ENUMS
