@@ -53,9 +53,13 @@ Tree growth can rapidly get out of hand, so don't shrug them off!
 
 Maps are held inside of a .slay type file. Anyone can create a map, and you can use the default maps held in the repository to see how you can do so.
 
+*If you'd like to skip all the boring technicalities of map files, you can download the map editor by going to its [GitHub](https://www.github.com/jmseren/OpenSlay-MapUtility) and clicking on "releases"!*
+
 Anything in square brackets is a comment/title.
 
-After this, the first line is the map dimensions in width and height separated by a space.
+After this, the first line is the default number of players for this map.
+
+Next is the map dimensions in width and height separated by a space.
 
 On the next line is the hex size in pixels
 
