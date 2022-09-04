@@ -16,7 +16,7 @@ public class OpenSlay extends PApplet {
     public static EventHandler eventHandler = new EventHandler();
     public static int hexSize = 32;
     public static int page = 0;
-    public static int campaignMaps = 5;
+    public static int campaignMaps = 10;
 
 
     // For now, we will automatically assume we have as many players as there are colors
@@ -61,6 +61,7 @@ public class OpenSlay extends PApplet {
     public Pos playAreaSize;
     public Pos playAreaOffset = new Pos(100, 100);
     
+    public String mapFile = "";
     // Settings
     public static void main(String[] args) {
         String[] appletArgs = new String[] { "OpenSlay" };
@@ -95,9 +96,6 @@ public class OpenSlay extends PApplet {
             case GAME:
                 ingame();
                 break;
-            case PLAYER_COUNT:
-                //playerCount();
-                break;
             default:
                 break;
         }
@@ -115,7 +113,7 @@ public class OpenSlay extends PApplet {
             case MENU:
                 newGUI = new HashMap<String, GUI>();
                 TextElement title = new TextElement("OpenSlay", width/2, height/2 - 100);
-                TextButton startButton = new TextButton("Start", width/2, height/2, 200, 50, new Event(Events.CHANGE_STATE, GameState.PLAYER_COUNT));
+                TextButton startButton = new TextButton("Start", width/2, height/2, 200, 50, new Event(Events.CHANGE_STATE, GameState.MAP_SELECTION));
                 newGUI.put("title", title);
                 newGUI.put("startButton", startButton);
                 break;
@@ -148,16 +146,29 @@ public class OpenSlay extends PApplet {
                 newGUI.put("confirmButton", confirmButton);
                 break;
             case MAP_SELECTION:
+                // Display a grid with list of maps in the campaign
+
+                for(int i = 0; i < campaignMaps; i++){
+                    int x = i % 3;
+                    int y = i / 3;
+                    int buttonSize = height / 15;
+                    int buttonSpacing = height / 30;
+
+                    TextButton mapButton = new TextButton("" + (i+1), width/2 - (buttonSize * 3 + buttonSpacing * 2)/2 + x * (buttonSize + buttonSpacing), height/2 - (buttonSize * 3 + buttonSpacing * 2)/2 + y * (buttonSize + buttonSpacing), buttonSize, buttonSize, new Event(Events.MAP_SELECTED, i+1));
+                    newGUI.put("map" + i, mapButton);
+                }
                 break;
             default:
                 break;
         }
+
+        // This can probably be cleaned up, remnant of refactoring from a previous version
         guiElements = gameState == GameState.NEXT_TURN ? guiElements : newGUI;
     }
 
     public void initGame(HashMap<String, GUI> gui){
         // Load the map
-        gameMap = loadMap(this.getClass().getResourceAsStream("/maps/map.slay"));
+        gameMap = loadMap(this.getClass().getResourceAsStream("/maps/" + mapFile + ".slay"));
 
         // Randomize players territories
         ShuffleBag<Player> playerBag = new ShuffleBag<Player>();
@@ -307,6 +318,10 @@ public class OpenSlay extends PApplet {
                 case CHANGE_STATE:
                     // Change the game state
                     changeState((GameState)(e.getEventData()));
+                    break;
+                case MAP_SELECTED:
+                    mapFile = "map" + ((int) e.getEventData());
+                    changeState(GameState.PLAYER_COUNT);
                     break;
                 case NO_EVENT:
                 default:
@@ -589,7 +604,7 @@ public class OpenSlay extends PApplet {
                 if(line.charAt(0) == '[') continue; // This line is the header or a comment.
                 if(line.charAt(0) == '#') continue; // This line is a comment.
                 if(lineSplit.length != 1) throw new Exception("Invalid map file: player line is invalid.");
-                int playerCount = Integer.parseInt(lineSplit[0]);
+                //int playerCount = Integer.parseInt(lineSplit[0]);
                 break;
             }
 
