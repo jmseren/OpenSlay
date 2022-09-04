@@ -20,12 +20,27 @@ public class OpenSlay extends PApplet {
 
     // For now, we will automatically assume we have as many players as there are colors
     public static Color[] playerColors = {
+        // Green
         new Color(50, 168, 82),
+
+        // Cyan
         new Color(0, 127, 200),
+
+        // Red
         new Color(245, 152, 66),
+
+        // Purple
         new Color(177, 77, 184),
+
+        // Orange
+        new Color(232, 40, 55),
+
+        // Pink
+        new Color(255, 0, 255),
+
+
     };
-    public static Player[] players = new Player[playerColors.length];
+    public static Player[] players;
     public static Player currPlayer;
 
     public static HexMap gameMap;
@@ -94,41 +109,56 @@ public class OpenSlay extends PApplet {
         initState(state);
     }
     public void initState(GameState state){
-        guiElements.clear();
+        HashMap<String, GUI> newGUI = new HashMap<String, GUI>();
         switch(state){
             case MENU:
-                guiElements = new HashMap<String, GUI>();
+                newGUI = new HashMap<String, GUI>();
                 TextElement title = new TextElement("OpenSlay", width/2, height/2 - 100);
-                TextButton startButton = new TextButton("Start", width/2, height/2, 200, 50, new Event(Events.CHANGE_STATE, GameState.GAME));
-                guiElements.put("title", title);
-                guiElements.put("startButton", startButton);
+                TextButton startButton = new TextButton("Start", width/2, height/2, 200, 50, new Event(Events.CHANGE_STATE, GameState.PLAYER_COUNT));
+                newGUI.put("title", title);
+                newGUI.put("startButton", startButton);
                 break;
             case NEXT_TURN:
                 break;
             case GAME:
-                initGame();
-                break;
-            case MAP_SELECTION:
+                // Create Players
+                players = new Player[((NumberElement)(guiElements.get("playerCount"))).value];
+                for(int i = 0; i < players.length; i++){
+                    players[i] = new Player(playerColors[i]);
+                }
+                currPlayer = players[0];
+                initGame(newGUI);
                 break;
             case PLAYER_COUNT:
+                title = new TextElement("Player Count", width/2, height/2 - 100);
+                // Text element in the center will display the current player count
+                NumberElement playerCount = new NumberElement(2, 2, 6, width/2, height/2);
+                // Text buttons on the left and right will decrease and increase the player count
+                TextButton decreaseButton = new TextButton("<", width/2 - 100, height/2, 50, 50, new Event(Events.DECREMENT, playerCount));
+                TextButton increaseButton = new TextButton(">", width/2 + 100, height/2, 50, 50, new Event(Events.INCREMENT, playerCount));
+                
+                // Confirm button will start the game
+                TextButton confirmButton = new TextButton("Confirm", width/2, height/2 + 100, 200, 50, new Event(Events.CHANGE_STATE, GameState.GAME));
+                
+                newGUI.put("title", title);
+                newGUI.put("playerCount", playerCount);
+                newGUI.put("decreaseButton", decreaseButton);
+                newGUI.put("increaseButton", increaseButton);
+                newGUI.put("confirmButton", confirmButton);
+                break;
+            case MAP_SELECTION:
                 break;
             default:
                 break;
         }
+        guiElements = newGUI;
     }
 
-    public void initGame(){
+    public void initGame(HashMap<String, GUI> gui){
         // Load the map
         gameMap = loadMap(this.getClass().getResourceAsStream("/maps/map.slay"));
 
-        // Create Players
-        for(int i = 0; i < players.length; i++){
-            players[i] = new Player(playerColors[i]);
-        }
-        currPlayer = players[0];
-
         // Randomize players territories
-        guiElements = new HashMap<String, GUI>();
         ShuffleBag<Player> playerBag = new ShuffleBag<Player>();
         for(Player p : players){
             playerBag.add(p, 2);
@@ -158,12 +188,12 @@ public class OpenSlay extends PApplet {
         // Add the peasant button
         PImage peasantTexture = textures.get("peasant_disabled");
         ImageButton peasantButton = new ImageButton("peasant_button", peasantTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 2, peasantTexture.width * 2, peasantTexture.height * 2, Events.PEASANT);
-        guiElements.put(peasantButton.name, peasantButton);
+        gui.put(peasantButton.name, peasantButton);
 
         // Add the castle button
         PImage castleTexture = textures.get("castle_disabled");
         ImageButton castleButton = new ImageButton("castle_button", castleTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 4, castleTexture.width * 2, castleTexture.height * 2, Events.CASTLE);
-        guiElements.put(castleButton.name, castleButton);
+        gui.put(castleButton.name, castleButton);
     }
 
     public void nextTurn(){
@@ -241,9 +271,14 @@ public class OpenSlay extends PApplet {
             Event e = eventHandler.nextEvent();
             switch(e.getEventType()){
                 case INCREMENT:
-                    // Increment a text field
-                    TextElement t = (TextElement)(e.getEventData());
-                    t.text = Integer.toString(Integer.parseInt(t.text) + 1);
+                    // Increment a NumberElement
+                    NumberElement n = (NumberElement) e.getEventData();
+                    n.increment();
+                    break;
+                case DECREMENT:
+                    // Decrement a NumberElement
+                    n = (NumberElement) e.getEventData();
+                    n.decrement();
                     break;
                 case PEASANT:
                     // Player has attempted to purchase a peasant
@@ -431,8 +466,8 @@ public class OpenSlay extends PApplet {
     }
     public void drawGUI(){
         if(gameState == GameState.GAME){
-            drawToolBar();
             drawMap(gameMap);
+            drawToolBar();
             drawUnit();
         }
         for(GUI g : guiElements.values()){
@@ -556,7 +591,6 @@ public class OpenSlay extends PApplet {
                 if(line.charAt(0) == '#') continue; // This line is a comment.
                 if(lineSplit.length != 1) throw new Exception("Invalid map file: player line is invalid.");
                 int playerCount = Integer.parseInt(lineSplit[0]);
-                players = new Player[playerCount];
                 break;
             }
 

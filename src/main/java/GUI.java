@@ -22,7 +22,7 @@ public abstract class GUI {
     }
     
     public boolean click(int x, int y){
-        if( x >= this.x - this.width/2 && x <= this.x + this.width/2 && y >= this.y - this.width/2 && y <= this.y + this.height/2){
+        if( x >= this.x - this.width/2 && x <= this.x + this.width/2 && y >= this.y - this.height/2 && y <= this.y + this.height/2){
             return true;
         }
         return false;

@@ -1,5 +1,6 @@
 public enum Events {
     INCREMENT,
+    DECREMENT,
     CHANGE_STATE,
     PEASANT,
     CASTLE,
