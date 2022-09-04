@@ -16,6 +16,7 @@ public class OpenSlay extends PApplet {
     public static EventHandler eventHandler = new EventHandler();
     public static int hexSize = 32;
     public static int page = 0;
+    public static int campaignMaps = 5;
 
 
     // For now, we will automatically assume we have as many players as there are colors
@@ -151,7 +152,7 @@ public class OpenSlay extends PApplet {
             default:
                 break;
         }
-        guiElements = newGUI;
+        guiElements = gameState == GameState.NEXT_TURN ? guiElements : newGUI;
     }
 
     public void initGame(HashMap<String, GUI> gui){
@@ -194,6 +195,11 @@ public class OpenSlay extends PApplet {
         PImage castleTexture = textures.get("castle_disabled");
         ImageButton castleButton = new ImageButton("castle_button", castleTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 4, castleTexture.width * 2, castleTexture.height * 2, Events.CASTLE);
         gui.put(castleButton.name, castleButton);
+        
+        // Add the end turn button
+        TextButton nextTurn = new TextButton("End Turn", (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height - 100, 200, 50, new Event(Events.CHANGE_STATE, GameState.NEXT_TURN));
+        gui.put("nextTurn", nextTurn);
+
     }
 
     public void nextTurn(){
@@ -215,8 +221,6 @@ public class OpenSlay extends PApplet {
                 }
             }
             // If it is a new round make all units moveable      
-            // EDIT: This is WRONG, the original game did this on a turn by turn basis in your own territory only
-
             if(turn % players.length == 0){
                 for(Hex h : gameMap.allHexes()){
                     h.unitCanMove = true;
@@ -389,11 +393,6 @@ public class OpenSlay extends PApplet {
                         }
                         break;
                     }
-                }
-
-                if(mouseX >=  width-(width * .25f) + (width * 0.25f / 2) -( width * .2f) / 2&&  mouseX <= width-(width * .25f) + (width * 0.25f / 2) + (width * .2f) / 2 && mouseY >= height - (height / 10) - height / 20 &&  mouseY <= height - (height / 10) + height / 20){
-                    // Player has clicked the end turn button
-                    gameState = GameState.NEXT_TURN;
                 }
                 
                 
