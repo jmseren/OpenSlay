@@ -31,3 +31,4 @@ hs_err_pid*
 
 # Other
 .DS_STORE
+.code-workspace
