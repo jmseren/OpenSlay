@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../OpenSlay-MapUtility"
+		}
+	],
+	"settings": {
+		"maven.view": "flat",
+		"java.configuration.updateBuildConfiguration": "interactive"
+	}
+}

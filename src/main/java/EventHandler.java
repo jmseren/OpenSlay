@@ -3,7 +3,6 @@ import java.util.LinkedList;
 public class EventHandler {
     private LinkedList<Event> eventQueue;
     
-
     public EventHandler(){
         this.eventQueue = new LinkedList<Event>();
     }

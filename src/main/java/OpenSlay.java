@@ -15,6 +15,8 @@ public class OpenSlay extends PApplet {
     public static HashMap<String, GUI> guiElements;
     public static EventHandler eventHandler = new EventHandler();
     public static int hexSize = 32;
+    public static int page = 0;
+
 
     // For now, we will automatically assume we have as many players as there are colors
     public static Color[] playerColors = {
@@ -29,7 +31,7 @@ public class OpenSlay extends PApplet {
     public static HexMap gameMap;
 
     // Global Variables
-    public GameState gameState = GameState.MENU;
+    public GameState gameState;
 
     public ArrayList<Territory> currTerritories;
 
@@ -60,52 +62,71 @@ public class OpenSlay extends PApplet {
         font = createFont("fonts/pixeloidsans.ttf", 32);
         textFont(font, 32);
         loadTextures();
-        gameMap = loadMap(this.getClass().getResourceAsStream("/maps/map.slay"));
-
-        // Create Players
-        for(int i = 0; i < playerColors.length; i++){
-            players[i] = new Player(playerColors[i]);
-        }
-        currPlayer = players[0];
-
-        // Setup Menu GUI
         guiElements = new HashMap<String, GUI>();
-        TextElement title = new TextElement("OpenSlay", width/2, height/2 - 100);
-        TextButton startButton = new TextButton("Start", width/2, height/2, 200, 50, new Event(Events.CHANGE_STATE, GameState.INIT_GAME));
-        guiElements.put("title", title);
-        guiElements.put("startButton", startButton);
-
+        
+        changeState(GameState.MENU);
     }
 
 
     public void draw(){
         background(0, 0, 255);
         drawBackground();
+        drawGUI();
         switch(gameState){
-            case MENU:
-                menu();
-                break;
-            case INIT_GAME:
-                initGame();
-                break;
             case NEXT_TURN:
                 nextTurn();
                 break;
             case GAME:
                 ingame();
                 break;
+            case PLAYER_COUNT:
+                //playerCount();
+                break;
+            default:
+                break;
+        }
+        processEvents();
+    }
+
+    // In-Game Functions
+    public void changeState(GameState state){
+        gameState = state;
+        initState(state);
+    }
+    public void initState(GameState state){
+        guiElements.clear();
+        switch(state){
+            case MENU:
+                guiElements = new HashMap<String, GUI>();
+                TextElement title = new TextElement("OpenSlay", width/2, height/2 - 100);
+                TextButton startButton = new TextButton("Start", width/2, height/2, 200, 50, new Event(Events.CHANGE_STATE, GameState.GAME));
+                guiElements.put("title", title);
+                guiElements.put("startButton", startButton);
+                break;
+            case NEXT_TURN:
+                break;
+            case GAME:
+                initGame();
+                break;
+            case MAP_SELECTION:
+                break;
+            case PLAYER_COUNT:
+                break;
             default:
                 break;
         }
     }
 
-    // In-Game Functions
-    public void menu(){
-        drawBackground();
-        drawGUI();
-        processEvents();
-    }
     public void initGame(){
+        // Load the map
+        gameMap = loadMap(this.getClass().getResourceAsStream("/maps/map.slay"));
+
+        // Create Players
+        for(int i = 0; i < players.length; i++){
+            players[i] = new Player(playerColors[i]);
+        }
+        currPlayer = players[0];
+
         // Randomize players territories
         guiElements = new HashMap<String, GUI>();
         ShuffleBag<Player> playerBag = new ShuffleBag<Player>();
@@ -143,9 +164,8 @@ public class OpenSlay extends PApplet {
         PImage castleTexture = textures.get("castle_disabled");
         ImageButton castleButton = new ImageButton("castle_button", castleTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 4, castleTexture.width * 2, castleTexture.height * 2, Events.CASTLE);
         guiElements.put(castleButton.name, castleButton);
-
-        gameState = GameState.GAME;
     }
+
     public void nextTurn(){
         turn++;
         // Reset selected hex
@@ -215,17 +235,16 @@ public class OpenSlay extends PApplet {
     }
     public void ingame(){
         if(refresh) refreshMap();
-        drawToolBar();
-        drawMap(gameMap);
-        drawGUI();
-        drawUnit();
-        processEvents();
-
     }
     public void processEvents(){
         while(eventHandler.queueSize() > 0){
             Event e = eventHandler.nextEvent();
             switch(e.getEventType()){
+                case INCREMENT:
+                    // Increment a text field
+                    TextElement t = (TextElement)(e.getEventData());
+                    t.text = Integer.toString(Integer.parseInt(t.text) + 1);
+                    break;
                 case PEASANT:
                     // Player has attempted to purchase a peasant
                     if(selectedTerritory != null && selectedUnit == null && selectedTerritory.getCapital().gold >= 10){
@@ -248,8 +267,7 @@ public class OpenSlay extends PApplet {
                     break;
                 case CHANGE_STATE:
                     // Change the game state
-                    gameState = (GameState)(e.getEventData());
-                    
+                    changeState((GameState)(e.getEventData()));
                     break;
                 case NO_EVENT:
                 default:
@@ -408,12 +426,15 @@ public class OpenSlay extends PApplet {
                 guiElements.get("peasant_button").texture = textures.get("peasant_disabled");
             }
         }
-
-        // End Turn Button
         
 
     }
     public void drawGUI(){
+        if(gameState == GameState.GAME){
+            drawToolBar();
+            drawMap(gameMap);
+            drawUnit();
+        }
         for(GUI g : guiElements.values()){
             g.draw(this);
         }
@@ -527,6 +548,18 @@ public class OpenSlay extends PApplet {
             //File file = new File(mapFile);
             Scanner lineScanner = new Scanner(is);
 
+            // Load default number of players
+            while(lineScanner.hasNextLine()){
+                String line = lineScanner.nextLine();
+                String[] lineSplit = line.split(" ");
+                if(line.charAt(0) == '[') continue; // This line is the header or a comment.
+                if(line.charAt(0) == '#') continue; // This line is a comment.
+                if(lineSplit.length != 1) throw new Exception("Invalid map file: player line is invalid.");
+                int playerCount = Integer.parseInt(lineSplit[0]);
+                players = new Player[playerCount];
+                break;
+            }
+
             // Load dimensions of map
             while(lineScanner.hasNextLine()){
                 String line = lineScanner.nextLine();
@@ -624,8 +657,11 @@ public class OpenSlay extends PApplet {
     // ENUMS
     public enum GameState {
         MENU,
+        PLAYER_COUNT,
+        LOAD,
         INIT_GAME,
         NEXT_TURN,
+        MAP_SELECTION,
         GAME,
         PAUSE,
         END

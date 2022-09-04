@@ -1,5 +1,3 @@
-import processing.core.*;
-
 public class TextElement extends GUI {
     public String text;
 
@@ -14,8 +12,6 @@ public class TextElement extends GUI {
         return null;
     }
     public void draw(OpenSlay os) {
-        os.rectMode(PConstants.CENTER);
         os.text(text, x, y);
-        os.rectMode(PConstants.CORNER);
     }
 }
