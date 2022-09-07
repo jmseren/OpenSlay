@@ -61,6 +61,10 @@ public class Territory {
         }
         return null;
     }
+    public boolean hasCapital() {
+        if(this.size() < 2) return false;
+        return !(this.getCapital() == null);
+    }
     public void moveCapital() {
         Hex c = this.getCapital();
         if(this.size() == 2){
@@ -98,8 +102,17 @@ public class Territory {
         }
         return false;
     }
-    public void income(){
-        if(this.size() < 2) return;
+    public ArrayList<Hex> neighboringHexes(){
+        ArrayList<Hex> neighbors = new ArrayList<Hex>();
+        for(Hex h : tiles){
+            for(Hex n : OpenSlay.gameMap.getNeighbors(h)){
+                if(!neighbors.contains(n) && !tiles.contains(n)) neighbors.add(n);
+            }
+        }
+        return neighbors;
+    }
+    public int getIncome(){ // Returns the net income for a territory
+        if(this.size() < 2) return 0;
         int profit = 0;
         int wages = 0;
         for(Hex h : tiles){
@@ -107,6 +120,7 @@ public class Territory {
                 case 1:
                     profit++;
                     break;
+                // 2 and 3 are skipped as they contain trees and do not produce gold
                 case 4:
                     // Peasant
                     profit++;
@@ -129,6 +143,10 @@ public class Territory {
                     break;
             }
         }
-        this.getCapital().gold += profit - wages;
+        return profit - wages;
+    }
+    public void income(){
+        if(this.size() < 2) return;
+        this.getCapital().gold += this.getIncome();
     }
 }

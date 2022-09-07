@@ -2,6 +2,7 @@ ShuffleBag.class
 Events.class
 HexMap.class
 EventHandler.class
+NumberElement.class
 Color.class
 OpenSlay$GameState.class
 OpenSlay$1.class

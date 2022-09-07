@@ -225,12 +225,32 @@ public class OpenSlay extends PApplet {
         refreshMap();
         // If it is the second round, calculate the income for the new player
         int round = turn / players.length;
+        int tcount = 0;
         if(round >= 1){
             for(Territory t : currTerritories){
                 if(t.owner == currPlayer){
                     t.income();
+                    if(t.hasCapital()){
+                        if(t.getCapital().gold < 0){
+                            for(Hex h : t.tiles){
+                                if(h.hasUnit()){
+                                    h.code = 1;
+                                }
+                            }
+                            t.getCapital().gold = 0;
+                        }
+                        tcount++;
+                    }else{
+                        for(Hex h : t.tiles){
+                            if(h.hasUnit()){
+                                h.code = 1;
+                            }
+                        }
+                    }
+                    
                 }
             }
+            if(tcount == 0) currPlayer.lost = true;
             // If it is a new round make all units moveable      
             if(turn % players.length == 0){
                 for(Hex h : gameMap.allHexes()){
@@ -280,6 +300,10 @@ public class OpenSlay extends PApplet {
     }
     public void ingame(){
         if(refresh) refreshMap();
+        if(!currPlayer.ai) return;
+
+        // AI
+
     }
     public void processEvents(){
         while(eventHandler.queueSize() > 0){
@@ -346,6 +370,10 @@ public class OpenSlay extends PApplet {
         for(GUI g : guiElements.values()){
             if(g.click(mouseX, mouseY)) eventHandler.pushEvent(g.onClick());
         }
+        // if(currPlayer.ai){
+        //     // AI is playing, do nothing
+        //     return;
+        // }
         switch(gameState){
             case GAME:
                 Hex h = getClosestHex();
@@ -414,7 +442,13 @@ public class OpenSlay extends PApplet {
                 break;
         }
     }
-
+    public void keyPressed(){
+        if(key == ' '){
+            currPlayer.stepAI(currTerritories);
+            refreshMap();
+        }
+    }
+    
     // Event handling
 
 
@@ -459,7 +493,7 @@ public class OpenSlay extends PApplet {
         text("OpenSlay", width-(width * .25f) + (width * 0.25f / 2), height / 10);
 
 
-        if(selectedTerritory != null){
+        if(selectedTerritory != null && !currPlayer.ai){
             int gold = selectedTerritory.getCapital().gold;
             text("Gold: " + gold, width-(width * .25f) + (width * 0.25f / 2), height / 10 + (height / 10) * 1);
             

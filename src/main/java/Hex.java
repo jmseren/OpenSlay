@@ -27,6 +27,9 @@ public class Hex {
         this.owner = player;
         this.color = player.color;
     }
+    public boolean hasUnit(){
+        return this.code > 2 && this.code < 7;
+    }
     public Unit getUnit(){
         Unit u = new Unit(codeToUnitPower(code), this.territory);
         this.code = 1;
