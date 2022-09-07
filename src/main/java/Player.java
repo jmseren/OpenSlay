@@ -4,6 +4,7 @@ public class Player {
     Color color;
     boolean ai = false;
     boolean lost = false;
+    int aiSteps = 5;
     float difficulty = 0.5f;
     public Player(Color color){
         this.color = color;

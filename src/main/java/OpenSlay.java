@@ -17,6 +17,7 @@ public class OpenSlay extends PApplet {
     public static int hexSize = 32;
     public static int page = 0;
     public static int campaignMaps = 10;
+    
 
 
     // For now, we will automatically assume we have as many players as there are colors
@@ -62,6 +63,8 @@ public class OpenSlay extends PApplet {
     public Pos playAreaOffset = new Pos(100, 100);
     
     public String mapFile = "";
+
+    public int step = 0;
     // Settings
     public static void main(String[] args) {
         String[] appletArgs = new String[] { "OpenSlay" };
@@ -124,6 +127,9 @@ public class OpenSlay extends PApplet {
                 players = new Player[((NumberElement)(guiElements.get("playerCount"))).value];
                 for(int i = 0; i < players.length; i++){
                     players[i] = new Player(playerColors[i]);
+                    if(!(i == 0)){
+                        players[i].ai = true;
+                    }
                 }
                 currPlayer = players[0];
                 initGame(newGUI);
@@ -303,6 +309,15 @@ public class OpenSlay extends PApplet {
         if(!currPlayer.ai) return;
 
         // AI
+        if(frameCount % 30 == 15 && step < currPlayer.aiSteps){
+            step++;
+            currPlayer.stepAI(currTerritories);
+        }else if(step >= currPlayer.aiSteps){
+            step = 0;
+            changeState(GameState.NEXT_TURN);
+        }
+
+
 
     }
     public void processEvents(){
