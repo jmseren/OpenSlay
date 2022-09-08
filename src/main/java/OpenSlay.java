@@ -218,7 +218,7 @@ public class OpenSlay extends PApplet {
         gui.put("nextTurn", nextTurn);
 
         // Add the player indicator
-        ImageElement playerIndicator = new ImageElement("player_indicator", textures.get("icon_player"), (width / 25)/2, (width / 25)/2, width / 24, width / 24);
+        ImageElement playerIndicator = new ImageElement("player_indicator", textures.get("icon_player"), (width / 24)/2 + 10, (width / 24)/2 + 10, width / 24, width / 24);
         gui.put("player_indicator", playerIndicator);
     }
 
