@@ -523,6 +523,8 @@ public class OpenSlay extends PApplet {
             }else{
                 guiElements.get("peasant_button").texture = textures.get("peasant_disabled");
             }
+        }else if(currPlayer.ai){
+
         }
         
 
@@ -599,6 +601,17 @@ public class OpenSlay extends PApplet {
         }
         if(hex.capital) image(textures.get("capital"), x + playAreaOffset.x, y + playAreaOffset.y);
         if(hex.castle) image(textures.get("castle"), x + playAreaOffset.x, y + playAreaOffset.y);
+
+        if(hex.owner == currPlayer){
+            if(hex.hasUnit() && hex.unitCanMove){
+                image(textures.get("icon_exclamation"), x + playAreaOffset.x, y + playAreaOffset.y - (int)(hexSize * 0.8));
+            }else if(hex.capital && hex.territory.getCapital().gold >= 10){
+                tint(50, 100, 200);
+                image(textures.get("icon_flag"), x + playAreaOffset.x, y + playAreaOffset.y - (int)(hexSize * 0.8));
+                noTint();
+            }
+        }
+        
     }
 
 
@@ -749,6 +762,9 @@ public class OpenSlay extends PApplet {
         g.filter(GRAY);
         g.endDraw();
         textures.put("castle_disabled", g);
+
+        importTexture("icon_flag", "icons/flag.png", (int)(hexSize * 0.75));
+        importTexture("icon_exclamation", "icons/exclamation.png", (int)(hexSize * 0.75));
     }
 
     // ENUMS
