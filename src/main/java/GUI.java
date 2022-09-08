@@ -9,6 +9,8 @@ public abstract class GUI {
     public int height;
     public PImage texture;
 
+    public boolean visible = true;
+
     public GUI(String name, PImage texture, int x, int y, int z, int width, int height) {
         this.name = name;
         this.x = x;

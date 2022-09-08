@@ -39,9 +39,11 @@ public class Hex {
         int unitcode = unitPowerToCode(unit.power);
 
         // If the unit is a castle, change the castle variable
-        this.castle = false;
+
+        this.castle = unitcode == 8;
         this.capital = false;
-        this.code = unitcode;
+        this.code = castle ? 1 : unitcode;
+
     }
     public Player getOwner(){
         return this.owner;

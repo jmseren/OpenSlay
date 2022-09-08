@@ -346,7 +346,7 @@ public class OpenSlay extends PApplet {
                     break;
                 case CASTLE:
                     // Player has attempted to purchase a castle
-                    if(selectedTerritory != null && selectedUnit == null && selectedTerritory.getCapital().gold >= 20){
+                    if(selectedTerritory != null && selectedUnit == null && selectedTerritory.getCapital().gold >= 15){
                         selectedUnit = new Unit(5, selectedTerritory);
                         selectedTerritory.getCapital().gold -= 15;
                         selectedTerritory = null;
@@ -523,8 +523,20 @@ public class OpenSlay extends PApplet {
             }else{
                 guiElements.get("peasant_button").texture = textures.get("peasant_disabled");
             }
-        }else if(currPlayer.ai){
+        }
 
+        // Hide the toolbar GUI if the AI is playing
+        if(currPlayer.ai){
+            guiElements.get("peasant_button").visible = false;
+            guiElements.get("nextTurn").visible = false;
+            
+            GUI castle = guiElements.get("castle_button");
+            castle.visible = false;
+            image(textures.get("icon_computer"), castle.x, castle.y);
+        }else{
+            guiElements.get("peasant_button").visible = true;
+            guiElements.get("castle_button").visible = true;
+            guiElements.get("nextTurn").visible = true;
         }
         
 
@@ -536,7 +548,7 @@ public class OpenSlay extends PApplet {
             drawUnit();
         }
         for(GUI g : guiElements.values()){
-            g.draw(this);
+            if(g.visible) g.draw(this);
         }
     }
     public void drawMap(HexMap map){
@@ -765,6 +777,7 @@ public class OpenSlay extends PApplet {
 
         importTexture("icon_flag", "icons/flag.png", (int)(hexSize * 0.75));
         importTexture("icon_exclamation", "icons/exclamation.png", (int)(hexSize * 0.75));
+        importTexture("icon_computer", "icons/cpu.png", width / 20);
     }
 
     // ENUMS
