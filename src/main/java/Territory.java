@@ -146,7 +146,7 @@ public class Territory {
         return profit - wages;
     }
     public void income(){
-        if(this.size() < 2) return;
+        if(!this.hasCapital()) return;
         this.getCapital().gold += this.getIncome();
     }
 }

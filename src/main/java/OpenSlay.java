@@ -217,6 +217,9 @@ public class OpenSlay extends PApplet {
         TextButton nextTurn = new TextButton("End Turn", (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height - 100, 200, 50, new Event(Events.CHANGE_STATE, GameState.NEXT_TURN));
         gui.put("nextTurn", nextTurn);
 
+        // Add the player indicator
+        ImageElement playerIndicator = new ImageElement("player_indicator", textures.get("icon_player"), (width / 25)/2, (width / 25)/2, width / 24, width / 24);
+        gui.put("player_indicator", playerIndicator);
     }
 
     public void nextTurn(){
@@ -306,6 +309,7 @@ public class OpenSlay extends PApplet {
     }
     public void ingame(){
         if(refresh) refreshMap();
+        ((ImageElement)(guiElements.get("player_indicator"))).tint = currPlayer.color;
         if(!currPlayer.ai) return;
 
         // AI
@@ -323,6 +327,7 @@ public class OpenSlay extends PApplet {
     public void processEvents(){
         while(eventHandler.queueSize() > 0){
             Event e = eventHandler.nextEvent();
+            if(e == null) continue;
             switch(e.getEventType()){
                 case INCREMENT:
                     // Increment a NumberElement
@@ -778,6 +783,7 @@ public class OpenSlay extends PApplet {
         importTexture("icon_flag", "icons/flag.png", (int)(hexSize * 0.75));
         importTexture("icon_exclamation", "icons/exclamation.png", (int)(hexSize * 0.75));
         importTexture("icon_computer", "icons/cpu.png", width / 20);
+        importTexture("icon_player", "icons/player.png", width / 25);
     }
 
     // ENUMS
