@@ -64,6 +64,10 @@ public class Hex {
         return power + 3;
     }
     public boolean combineUnit(Unit u){
+        if(!this.hasUnit() && this.isEmpty()){
+            this.setUnit(u);
+            return true;
+        }
         int newCode = this.code + u.power;
         
         // Check if the new power would be higher than the max unit
