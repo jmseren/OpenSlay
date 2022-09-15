@@ -4,17 +4,21 @@ public class Player {
     Color color;
     boolean ai = false;
     boolean lost = false;
-    int aiSteps = 5;
+    int aiSteps;
     float difficulty = 0.5f;
+    
     public Player(Color color){
         this.color = color;
+        this.aiSteps = (int)(10 *  difficulty);
     }
     public void stepAI(ArrayList<Territory> territories){
         // AI will run in steps, so that it can appear to run at a slower speed
+        // Number of steps will be determined by the difficulty
 
-        // Going to use a simple AI for now, just to get it working
-        // Future AI will consider enemy unit count, enemy territory income and size
-        // Whether or not the AI can join two of its territories, etc.
+        // Future AI Considerations:
+        // AI should prioritize severing territories to make them weaker
+        // AI should defend hexes with adjacent enemy units
+        // AI should prioritize killing enemy units
 
         HexMap map = OpenSlay.gameMap;
         ArrayList<Territory> friendlyTerritories = new ArrayList<Territory>();
@@ -38,7 +42,8 @@ public class Player {
         }
 
         if(!unitHexes.isEmpty() && (unitHexes.size() >= t.tiles.size() - 1 || t.getCapital().gold < 10 || Math.random() > 0.5)){
-            // Not enough room to buy a new unit, so we will move a unit instead
+            // Moving a unit
+
             // Pick a random unit
             Hex unit = unitHexes.get((int)(Math.random() * unitHexes.size()));
 
@@ -64,15 +69,27 @@ public class Player {
             // We will buy a new unit
             if((t.getIncome() >= 2 && t.getCapital().gold >= 10) || t.getCapital().gold >= 15){
                 ArrayList<Hex> validHexes = new ArrayList<Hex>();
+                ArrayList<Hex> combinableHexes = new ArrayList<Hex>();
                 
                 for(Hex h : t.tiles){
                     if(h.isEmpty()) validHexes.add(h);
+                    else if(h.hasUnit()) combinableHexes.add(h);
                 }
+
+                // Add combinable units to the list of valid hexes if 
+                // the territory can afford it
+                for(Hex h : combinableHexes){
+                    int combinedPower = h.codeToUnitPower() + 1;
+                    if(Unit.wage(combinedPower) >= t.getIncome()) continue;
+                    else if(combinedPower >= 5) continue;
+                    else validHexes.add(h);
+                }
+
                 if(validHexes.isEmpty()) return;
 
                 // Pick a random hex
                 Hex hex = validHexes.get((int)(Math.random() * validHexes.size()));
-                hex.setUnit(new Unit(1, t));
+                hex.combineUnit(new Unit(1, t));
                 t.getCapital().gold -= 10;
             }
 

@@ -19,8 +19,6 @@ public class OpenSlay extends PApplet {
     public static int campaignMaps = 10;
     
 
-
-    // For now, we will automatically assume we have as many players as there are colors
     public static Color[] playerColors = {
         // Green
         new Color(50, 168, 82),
@@ -38,7 +36,7 @@ public class OpenSlay extends PApplet {
         new Color(232, 40, 55),
 
         // Pink
-        new Color(255, 0, 255),
+        new Color(255, 30, 255),
 
 
     };
@@ -463,10 +461,7 @@ public class OpenSlay extends PApplet {
         }
     }
     public void keyPressed(){
-        if(key == ' '){
-            currPlayer.stepAI(currTerritories);
-            refreshMap();
-        }
+        // Unused
     }
     
     // Event handling

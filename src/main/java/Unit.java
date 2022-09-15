@@ -7,6 +7,10 @@ public class Unit {
     PImage texture;
     Territory territory;
 
+    public static int wage(int power){
+        return 2 * 3^(power - 1);
+    }
+
     public Unit(int power, Territory territory) {
         this.power = power;
         this.territory = territory;
