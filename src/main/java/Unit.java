@@ -10,7 +10,7 @@ public class Unit {
     public static int wage(int power){
         return 2 * 3^(power - 1);
     }
-
+    
     public Unit(int power, Territory territory) {
         this.power = power;
         this.territory = territory;
@@ -31,5 +31,8 @@ public class Unit {
                 texture = OpenSlay.textures.get("castle");
                 break;
         }
+    }
+    public int wage(){
+        return wage(this.power);
     }
 }

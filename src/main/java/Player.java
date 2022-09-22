@@ -5,11 +5,15 @@ public class Player {
     boolean ai = false;
     boolean lost = false;
     int aiSteps;
-    float difficulty = 0.5f;
+    int difficulty = 5;
     
     public Player(Color color){
         this.color = color;
-        this.aiSteps = (int)(10 *  difficulty);
+        this.aiSteps = difficulty;
+    }
+    public void setDifficulty(int difficulty){
+        this.difficulty = difficulty;
+        this.aiSteps = difficulty;
     }
     public void stepAI(ArrayList<Territory> territories){
         // AI will run in steps, so that it can appear to run at a slower speed
@@ -23,6 +27,8 @@ public class Player {
         HexMap map = OpenSlay.gameMap;
         ArrayList<Territory> friendlyTerritories = new ArrayList<Territory>();
         ArrayList<Territory> enemyTerritories = new ArrayList<Territory>();
+        ArrayList<Hex> unitHexes = new ArrayList<Hex>();
+        ArrayList<Hex> treeHexes = new ArrayList<Hex>();
 
         for(Territory t : territories){
             if(t.owner == this && t.hasCapital()){
@@ -36,34 +42,53 @@ public class Player {
         // Pick a random territory
         Territory t = friendlyTerritories.get((int)(Math.random() * friendlyTerritories.size()));
 
-        ArrayList<Hex> unitHexes = new ArrayList<Hex>();
         for(Hex h : t.tiles){
             if(h.hasUnit() && h.unitCanMove) unitHexes.add(h);
+            else if(h.hasTree()) treeHexes.add(h);
         }
 
-        if(!unitHexes.isEmpty() && (unitHexes.size() >= t.tiles.size() - 1 || t.getCapital().gold < 10 || Math.random() > 0.5)){
+
+        if(!unitHexes.isEmpty() && (unitHexes.size() >= t.tiles.size() - 1 || t.getCapital().gold < 10 || Math.random() > 0.4)){
             // Moving a unit
 
             // Pick a random unit
             Hex unit = unitHexes.get((int)(Math.random() * unitHexes.size()));
 
             ArrayList<Hex> validTargets = new ArrayList<Hex>();
+            ArrayList<Hex> priorityTargets = new ArrayList<Hex>();
             
+
             for(Hex h : t.neighboringHexes()){
                 // If the unit can attack this hex, add it to the list of valid targets
                 if(unit.codeToUnitPower() > map.getRelativePower(h) && h.filled){
                     validTargets.add(h);
+                    if(h.capital || h.castle) priorityTargets.add(h);
                 }
             }
 
+            for(Hex h : unitHexes){
+                if(h == unit) continue;
+                if(t.getIncome() >= Unit.wage(h.codeToUnitPower()) + 2) validTargets.add(h);
+            }
 
-            if(!(validTargets.size() > 0)) return;
+            if(treeHexes.size() > 1) validTargets.addAll(treeHexes);
+
+            if(validTargets.isEmpty()) return;
 
             // Pick a random target
-            Hex target = validTargets.get((int)(Math.random() * validTargets.size()));
-            target.setUnit(unit.getUnit());
-            target.setOwner(this);
-            target.unitCanMove = false;
+            Hex target;
+            if(priorityTargets.isEmpty()) target = validTargets.get((int)(Math.random() * validTargets.size()));
+            else target = priorityTargets.get((int)(Math.random() * priorityTargets.size()));
+
+            if(target.owner == this){
+                // Combine units
+                target.combineUnit(unit.getUnit());
+            }else{
+                target.setUnit(unit.getUnit());
+                target.setOwner(this);
+                target.unitCanMove = false;
+            }
+            
             unit.code = 1;
         }else{
             // We will buy a new unit

@@ -30,6 +30,9 @@ public class Hex {
     public boolean hasUnit(){
         return this.code > 3 && this.code < 8;
     }
+    public boolean hasTree(){
+        return this.code == 2 || this.code == 3;
+    }
     public Unit getUnit(){
         Unit u = new Unit(codeToUnitPower(code), this.territory);
         this.code = 1;
@@ -67,7 +70,12 @@ public class Hex {
         if(!this.hasUnit() && this.isEmpty()){
             this.setUnit(u);
             return true;
+        }else if(this.hasTree()){
+            this.setUnit(u);
+            this.unitCanMove = false;
+            return true;
         }
+
         int newCode = this.code + u.power;
         
         // Check if the new power would be higher than the max unit
