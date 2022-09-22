@@ -20,7 +20,7 @@ public class OpenSlay extends PApplet {
     public static EventHandler eventHandler = new EventHandler();
     public static int hexSize = 32;
     public static int page = 0;
-    public static int campaignMaps = 10;
+    public static int campaignMaps;
 
     
 
@@ -85,9 +85,11 @@ public class OpenSlay extends PApplet {
             settingsJSON = loadJSONObject("./data/settings.json");
         }
         JSONObject window = settingsJSON.getJSONObject("window");
+        JSONObject maps = settingsJSON.getJSONObject("maps");
         boolean fs = window.getBoolean("fullscreen");
         if(fs) fullScreen();    
         else size(window.getInt("width"), window.getInt("height"));
+        campaignMaps = maps.getInt("campaignLength");
 
     }
     public void setup(){
@@ -173,17 +175,18 @@ public class OpenSlay extends PApplet {
                 newGUI.put("confirmButton", confirmButton);
                 break;
             case MAP_SELECTION:
-                // Display a grid with list of maps in the campaign
+                // Display a row of 4 maps at a time, with arrows to scroll through them
+                TextButton[] buttons = new TextButton[4];
+                page = 0;
 
-                for(int i = 0; i < campaignMaps; i++){
-                    int x = i % 3;
-                    int y = i / 3;
-                    int buttonSize = height / 15;
-                    int buttonSpacing = height / 30;
-
-                    TextButton mapButton = new TextButton("" + (i+1), width/2 - (buttonSize * 3 + buttonSpacing * 2)/2 + x * (buttonSize + buttonSpacing), height/2 - (buttonSize * 3 + buttonSpacing * 2)/2 + y * (buttonSize + buttonSpacing), buttonSize, buttonSize, new Event(Events.MAP_SELECTED, i+1));
-                    newGUI.put("map" + i, mapButton);
+                for(int i = 0; i < buttons.length; i++){
+                    int mapNum = page*4 + i;
+                    newGUI.put(""+i, new TextButton("" + (mapNum + 1), width/2 - (2*110) + (150*i), height/2, 100, 100, new Event(Events.MAP_SELECTED, mapNum)));
+                    
                 }
+                newGUI.put("leftArrow", new TextButton("<", width/2 - 350, height/2, 50, 50, new Event(Events.PAGE, 0)));
+                newGUI.put("rightArrow", new TextButton(">", width/2 + 350, height/2, 50, 50, new Event(Events.PAGE, 1)));
+                newGUI.put("backButton", new TextButton("Back", width/2, height/2 + 200, 200, 50, new Event(Events.CHANGE_STATE, GameState.MENU)));
                 break;
             case SETTINGS_MENU:
                 TextElement settingsTitle = new TextElement("Settings", width/2, height/2 - 200);
@@ -416,6 +419,24 @@ public class OpenSlay extends PApplet {
                 case SET_FULLSCREEN:
                     settingsJSON.getJSONObject("window").setBoolean("fullscreen", (boolean) e.getEventData());
                     saveSettings();
+                    break;
+                case PAGE:
+                    // Change the page of the menu
+                    if((int) e.getEventData() == 0){
+                        // Scroll Left
+                        if(page > 0){
+                            page--;
+                        }
+                    }else{
+                        // Scroll Right
+                        if(page < campaignMaps - 4){
+                            page++;
+                        }
+                    }
+                    ((TextButton)(guiElements.get("0"))).text = "" + (page + 1);
+                    ((TextButton)(guiElements.get("1"))).text = "" + (page + 2);
+                    ((TextButton)(guiElements.get("2"))).text = "" + (page + 3);
+                    ((TextButton)(guiElements.get("3"))).text = "" + (page + 4);
                     break;
                 case NO_EVENT:
                 default:
