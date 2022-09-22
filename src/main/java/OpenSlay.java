@@ -3,22 +3,25 @@
 // Created By Jayden Serenari
 // Based on the Turn Based Strategy Game "Slay" by Sean O'Connor
 
-import processing.awt.PGraphicsJava2D;
 import processing.core.*;
-import processing.opengl.*;
+import processing.data.JSONObject;
+
 import java.util.*;
 import java.io.*;
+
 
 public class OpenSlay extends PApplet {
 
     // Global Static Variables
     public static PFont font;
+    boolean fullScreen;
     public static HashMap<String, PImage> textures = new HashMap<String, PImage>();
     public static HashMap<String, GUI> guiElements;
     public static EventHandler eventHandler = new EventHandler();
     public static int hexSize = 32;
     public static int page = 0;
     public static int campaignMaps = 10;
+
     
 
     public static Color[] playerColors = {
@@ -65,21 +68,33 @@ public class OpenSlay extends PApplet {
     public String mapFile = "";
 
     public int step = 0;
+
+    private JSONObject settingsJSON;
+
     // Settings
     public static void main(String[] args) {
         String[] appletArgs = new String[] { "OpenSlay" };
         PApplet.main(appletArgs);
     }
     public void settings(){
-        // fullScreen();
-        size(1280,720);
-        // noSmooth();
+        File f = new File("./data/settings.json");
+        if(!f.exists()){
+            settingsJSON = loadJSONObject("settings.json");
+            saveJSONObject(settingsJSON, "./data/settings.json");
+        }else{
+            settingsJSON = loadJSONObject("./data/settings.json");
+        }
+        JSONObject window = settingsJSON.getJSONObject("window");
+        boolean fs = window.getBoolean("fullscreen");
+        if(fs) fullScreen();    
+        else size(window.getInt("width"), window.getInt("height"));
+
     }
     public void setup(){
         frameRate(60);
         imageMode(CENTER);
         textAlign(CENTER, CENTER);
-        font = createFont("fonts/pixeloidsans.ttf", 32);
+        font = createFont("fonts/pixeloidsans.ttf", 64);
         textFont(font, 32);
         loadTextures();
         guiElements = new HashMap<String, GUI>();
@@ -115,10 +130,14 @@ public class OpenSlay extends PApplet {
         switch(state){
             case MENU:
                 newGUI = new HashMap<String, GUI>();
-                TextElement title = new TextElement("OpenSlay", width/2, height/2 - 100);
-                TextButton startButton = new TextButton("Start", width/2, height/2, 200, 50, new Event(Events.CHANGE_STATE, GameState.MAP_SELECTION));
+                TextElement title = new TextElement("OpenSlay", width/2, height/2 - 200);
+                TextButton startButton = new TextButton("Campaign", width/2, height/2 - 100, 200, 50, new Event(Events.CHANGE_STATE, GameState.MAP_SELECTION));
+                TextButton skirmishButton = new TextButton("Skirmish", width/2, height/2 + (50*2) - 100, 200, 50, new Event(Events.CHANGE_STATE, GameState.SKIRMISH));
+                TextButton settingsButton = new TextButton("Settings", width/2, height/2 + (50*4) - 100, 200, 50, new Event(Events.CHANGE_STATE, GameState.SETTINGS_MENU));
                 newGUI.put("title", title);
                 newGUI.put("startButton", startButton);
+                newGUI.put("skirmishButton", skirmishButton);
+                newGUI.put("settingsButton", settingsButton);
                 break;
             case NEXT_TURN:
                 break;
@@ -166,6 +185,16 @@ public class OpenSlay extends PApplet {
                     newGUI.put("map" + i, mapButton);
                 }
                 break;
+            case SETTINGS_MENU:
+                TextElement settingsTitle = new TextElement("Settings", width/2, height/2 - 200);
+                TextElement fullScreenLabel = new TextElement("Full Screen (Requires Restart)", width/2, height/2 - 100);
+                CheckElement fullScreenCheck = new CheckElement(width/2, height/2 - 50, 50, Events.SET_FULLSCREEN, settingsJSON.getJSONObject("window").getBoolean("fullscreen"));
+                TextButton backButton = new TextButton("Confirm", width/2, height/2 + 100, 200, 50, new Event(Events.CHANGE_STATE, GameState.MENU));
+                newGUI.put("title", settingsTitle);
+                newGUI.put("fullScreenLabel", fullScreenLabel);
+                newGUI.put("fullScreenCheck", fullScreenCheck);
+                newGUI.put("backButton", backButton);
+                break;
             default:
                 break;
         }
@@ -181,7 +210,7 @@ public class OpenSlay extends PApplet {
         // Randomize players territories
         ShuffleBag<Player> playerBag = new ShuffleBag<Player>();
         for(Player p : players){
-            playerBag.add(p, 2);
+            playerBag.add(p, 1);
         }
 
         for(int x = 0; x < gameMap.width; x++){
@@ -383,6 +412,10 @@ public class OpenSlay extends PApplet {
                 case MAP_SELECTED:
                     mapFile = "map" + ((int) e.getEventData());
                     changeState(GameState.PLAYER_COUNT);
+                    break;
+                case SET_FULLSCREEN:
+                    settingsJSON.getJSONObject("window").setBoolean("fullscreen", (boolean) e.getEventData());
+                    saveSettings();
                     break;
                 case NO_EVENT:
                 default:
@@ -613,7 +646,6 @@ public class OpenSlay extends PApplet {
 
         fill(hex.color.toProcessingColor());
         polygon(x + playAreaOffset.x, y + playAreaOffset.y, hexSize, 6, selected);
-
         switch(hex.code){
             case 2:
                 image(textures.get("pine"), x + playAreaOffset.x, y + playAreaOffset.y);
@@ -677,13 +709,26 @@ public class OpenSlay extends PApplet {
     
     // File IO Functions
 
+    // Save the settings in the classpath
+    public boolean saveSettings() {
+        try{
+            File f = new File("./data/settings.json");
+            FileWriter fw = new FileWriter(f);
+            fw.write(settingsJSON.toString());
+            fw.close();
+        }catch(Exception e){
+            System.out.println("Error saving settings: " + e);
+            return false;
+        }
+        return true;
+    }
+
     // Asset loading
     public void importTexture(String name, String path, int size){
         PImage img = loadImage(path);
-        PGraphics p = createGraphics(img.width, img.height);
-        
-        p.beginDraw();
+        PGraphics p = createGraphics(img.width, img.height);        
         p.noSmooth();
+        p.beginDraw();
         p.hint(PConstants.DISABLE_OPTIMIZED_STROKE);
         p.image(img, 0, 0);
         p.endDraw();
@@ -783,9 +828,9 @@ public class OpenSlay extends PApplet {
         importTexture("pine", "textures/pine.png", (int)(hexSize * 0.85));
         importTexture("palm", "textures/palm.png", (int)(hexSize * 0.85));
         importTexture("capital", "textures/capital.png", (int)(hexSize * 0.85));
-        importTexture("peasant", "textures/peasant.png", (int)(hexSize * 0.85));
-        importTexture("peasant_button", "textures/peasant.png", (int)(hexSize * 0.85) * 2);
-        importTexture("castle_button", "textures/fort.png", (int)(hexSize * 0.85) * 2);
+        // importTexture("peasant", "textures/peasant.png", (int)(hexSize * 0.85));
+        importTexture("peasant_button", "textures/peasant.png", (width/20));
+        importTexture("castle_button", "textures/fort.png", (width/20));
         // Create disabled peasant texture
         PImage p = textures.get("peasant_button");
         PGraphics g = createGraphics(p.width, p.height);
@@ -799,7 +844,7 @@ public class OpenSlay extends PApplet {
         importTexture("knight", "textures/knight.png", (int)(hexSize * 0.85));
         importTexture("baron", "textures/baron.png", (int)(hexSize * 0.85));
 
-        importTexture("castle", "textures/fort.png", (int)(hexSize * 0.85));
+        // importTexture("castle", "textures/fort.png", (int)(hexSize * 0.85));
         // Create disabled castle texture
         PImage f = textures.get("castle_button");
         g = createGraphics(f.width, f.height);
@@ -813,11 +858,20 @@ public class OpenSlay extends PApplet {
         importTexture("icon_exclamation", "icons/exclamation.png", (int)(hexSize * 0.75));
         importTexture("icon_computer", "icons/cpu.png", width / 20);
         importTexture("icon_player", "icons/player.png", width / 25);
-    }
+
+        PImage i = textures.get("peasant_button").get();
+        i.resize((int)(hexSize * 0.85), (int)(hexSize * 0.85));
+        textures.put("peasant", i);
+        i = textures.get("castle_button").get();
+        i.resize((int)(hexSize * 0.85), (int)(hexSize * 0.85));
+        textures.put("castle", i);
+    }  
 
     // ENUMS
     public enum GameState {
         MENU,
+        SKIRMISH,
+        SETTINGS_MENU,
         PLAYER_COUNT,
         LOAD,
         INIT_GAME,

@@ -6,4 +6,5 @@ public enum Events {
     CASTLE,
     NO_EVENT,
     MAP_SELECTED,
+    SET_FULLSCREEN
 }
