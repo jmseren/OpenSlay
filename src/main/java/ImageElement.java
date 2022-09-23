@@ -3,7 +3,11 @@ import processing.core.*;
 public class ImageElement extends GUI {
     int borderRadius = 10;
 
+    Event e = null;
+
     public Color tint;
+
+    public boolean resize = true;
 
     public Color backgroundColor;
 
@@ -13,7 +17,7 @@ public class ImageElement extends GUI {
         backgroundColor = new Color(127, 127, 127);
     }
     public Event onClick() {
-        return null;
+        return e;
     }
     public void draw(OpenSlay os) {
         os.rectMode(PConstants.CENTER);
@@ -21,7 +25,8 @@ public class ImageElement extends GUI {
         os.rect(x, y, width, height, borderRadius);
         os.fill(0,0,0);
         os.tint(tint.toProcessingColor());
-        os.image(texture, x, y, width, height);
+        if(resize) os.image(texture, x, y, width, height);
+        else os.image(texture, x, y);
         os.noTint();
         os.rectMode(PConstants.CORNER);
     }

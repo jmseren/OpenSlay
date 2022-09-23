@@ -176,12 +176,11 @@ public class OpenSlay extends PApplet {
                 break;
             case MAP_SELECTION:
                 // Display a row of 4 maps at a time, with arrows to scroll through them
-                TextButton[] buttons = new TextButton[4];
                 page = 0;
 
-                for(int i = 0; i < buttons.length; i++){
-                    int mapNum = page*4 + i;
-                    newGUI.put(""+i, new TextButton("" + (mapNum + 1), width/2 - (2*110) + (150*i), height/2, 100, 100, new Event(Events.MAP_SELECTED, mapNum)));
+                for(int i = 0; i < 4; i++){
+                    int mapNum = i+1;
+                    newGUI.put(""+i, new TextButton("" + mapNum, width/2 - (2*110) + (150*i), height/2, 100, 100, new Event(Events.MAP_SELECTED, mapNum)));
                     
                 }
                 newGUI.put("leftArrow", new TextButton("<", width/2 - 350, height/2, 50, 50, new Event(Events.PAGE, 0)));
@@ -239,13 +238,13 @@ public class OpenSlay extends PApplet {
 
         // Add the peasant button
         PImage peasantTexture = textures.get("peasant_disabled");
-        ImageButton peasantButton = new ImageButton("peasant_button", peasantTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 2, peasantTexture.width, peasantTexture.height, Events.PEASANT);
-        gui.put(peasantButton.name, peasantButton);
+        // ImageButton peasantButton = new ImageButton("peasant_button", peasantTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 2, peasantTexture.width, peasantTexture.height, Events.PEASANT);
+        // gui.put(peasantButton.name, peasantButton);
 
         // Add the castle button
         PImage castleTexture = textures.get("castle_disabled");
-        ImageButton castleButton = new ImageButton("castle_button", castleTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 4, castleTexture.width, castleTexture.height, Events.CASTLE);
-        gui.put(castleButton.name, castleButton);
+        // ImageButton castleButton = new ImageButton("castle_button", castleTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 4, castleTexture.width, castleTexture.height, Events.CASTLE);
+        // gui.put(castleButton.name, castleButton);
         
         // Add the end turn button
         TextButton nextTurn = new TextButton("End Turn", (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height - 100, 200, 50, new Event(Events.CHANGE_STATE, GameState.NEXT_TURN));
@@ -254,6 +253,19 @@ public class OpenSlay extends PApplet {
         // Add the player indicator
         ImageElement playerIndicator = new ImageElement("player_indicator", textures.get("icon_player"), (width / 24)/2 + 10, (width / 24)/2 + 10, width / 24, width / 24);
         gui.put("player_indicator", playerIndicator);
+
+        // Add the peasant button
+        ImageElement peasantButton = new ImageElement("peasant_button", peasantTexture, (width/24)/2 + 10, height - ((width/24)/2 + 10), width/24, width/24);
+        peasantButton.e = new Event(Events.PEASANT);
+        peasantButton.resize = false;
+        gui.put("peasant_button", peasantButton);
+
+        // Add the castle button
+        ImageElement castleButton = new ImageElement("castle_button", castleTexture, (width/24) + 10 + width/30, height - ((width/24)/2 + 10), width/24, width/24);
+        castleButton.e = new Event(Events.CASTLE);
+        castleButton.resize = false;
+        gui.put("castle_button", castleButton);
+
     }
 
     public void nextTurn(){
@@ -434,9 +446,13 @@ public class OpenSlay extends PApplet {
                         }
                     }
                     ((TextButton)(guiElements.get("0"))).text = "" + (page + 1);
+                    ((TextButton)(guiElements.get("0"))).e.setEventData(page + 1);
                     ((TextButton)(guiElements.get("1"))).text = "" + (page + 2);
+                    ((TextButton)(guiElements.get("1"))).e.setEventData(page + 2);
                     ((TextButton)(guiElements.get("2"))).text = "" + (page + 3);
+                    ((TextButton)(guiElements.get("2"))).e.setEventData(page + 3);
                     ((TextButton)(guiElements.get("3"))).text = "" + (page + 4);
+                    ((TextButton)(guiElements.get("3"))).e.setEventData(page + 4);
                     break;
                 case NO_EVENT:
                 default:
@@ -850,8 +866,8 @@ public class OpenSlay extends PApplet {
         importTexture("palm", "textures/palm.png", (int)(hexSize * 0.85));
         importTexture("capital", "textures/capital.png", (int)(hexSize * 0.85));
         // importTexture("peasant", "textures/peasant.png", (int)(hexSize * 0.85));
-        importTexture("peasant_button", "textures/peasant.png", (width/20));
-        importTexture("castle_button", "textures/fort.png", (width/20));
+        importTexture("peasant_button", "textures/peasant.png", (width/40));
+        importTexture("castle_button", "textures/fort.png", (width/40));
         // Create disabled peasant texture
         PImage p = textures.get("peasant_button");
         PGraphics g = createGraphics(p.width, p.height);

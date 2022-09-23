@@ -17,5 +17,8 @@ public class Event {
     public Events getEventType() {
         return eventType;
     }
+    public void setEventData(Object eventData) {
+        this.eventData = eventData;
+    }
 
 }
