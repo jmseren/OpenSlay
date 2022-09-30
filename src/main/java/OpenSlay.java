@@ -5,6 +5,7 @@
 
 import processing.core.*;
 import processing.data.JSONObject;
+import processing.event.*;
 
 import java.util.*;
 import java.io.*;
@@ -96,6 +97,7 @@ public class OpenSlay extends PApplet {
         frameRate(60);
         imageMode(CENTER);
         textAlign(CENTER, CENTER);
+        strokeWeight(2);
         font = createFont("fonts/pixeloidsans.ttf", 64);
         textFont(font, 32);
         loadTextures();
@@ -266,6 +268,24 @@ public class OpenSlay extends PApplet {
         castleButton.resize = false;
         gui.put("castle_button", castleButton);
 
+        // Display the list of players and ai/computer status
+        int yoff = 0;
+        for(Player p : players){
+            float x = width-(width * .25f) + (width * 0.25f / 2);
+            float y = (height / 10) * 2 + yoff;
+            ImageElement playerIcon = new ImageElement("", textures.get(p.ai ? "icon_computer" : "icon_player"), (int)x, (int)y, width / 24, width / 24);     
+            playerIcon.tint = p.color;
+            gui.put("player_icon_" + ((yoff / 100)), playerIcon);
+            yoff += 100;
+        }
+
+        // Create a gold indicator
+        TextButton goldIndicator = new TextButton("Gold: 0", width/2, height - width/24 + 12 , 200, 50, null);
+        goldIndicator.visible = false;
+        gui.put("gold_indicator", goldIndicator);
+
+
+
     }
 
     public void nextTurn(){
@@ -369,6 +389,22 @@ public class OpenSlay extends PApplet {
 
     }
     public void ingame(){
+        if(mouseX > width - 3){
+            // Scroll right
+            playAreaOffset.x -= 5;
+        }
+        if(mouseX < 3){
+            // Scroll left
+            playAreaOffset.x += 5;
+        }
+        if(mouseY > height - 3){
+            // Scroll down
+            playAreaOffset.y -= 5;
+        }
+        if(mouseY < 3){
+            // Scroll up
+            playAreaOffset.y += 5;
+        }
         if(refresh) refreshMap();
         ((ImageElement)(guiElements.get("player_indicator"))).tint = currPlayer.color;
         if(!currPlayer.ai) return;
@@ -555,9 +591,25 @@ public class OpenSlay extends PApplet {
     }
     public void keyPressed(){
         // Unused
-        if(key == ' ') currPlayer.stepAI(currTerritories);
     }
-    
+
+    public void mouseWheel(MouseEvent event) {
+        float e = event.getCount();
+        switch(gameState){
+            case GAME:
+                if(e > 0){
+                    // Zoom in
+                    if(hexSize < 256) hexSize++;
+                }
+                if(e < 0){
+                    // Zoom out
+                    if(hexSize > 8) hexSize--;
+                }
+                break;
+            default:
+        }
+    }
+  
     // Event handling
 
 
@@ -604,34 +656,32 @@ public class OpenSlay extends PApplet {
 
         if(selectedTerritory != null && !currPlayer.ai){
             int gold = selectedTerritory.getCapital().gold;
-            text("Gold: " + gold, width-(width * .25f) + (width * 0.25f / 2), height / 10 + (height / 10) * 1);
+            guiElements.get("gold_indicator").visible = true;
+            ((TextButton)(guiElements.get("gold_indicator"))).text = "Gold: " + gold;
             
-            // Set the buttons to their proper colors depending on territory's gold
+            // Set the buttons to visible if the player has enough gold
             if(gold >= 10){
-                guiElements.get("peasant_button").texture = textures.get("peasant_button");
+                guiElements.get("peasant_button").visible = true;
                 if(gold >= 15){
                     guiElements.get("castle_button").texture = textures.get("castle_button");
+                    guiElements.get("castle_button").visible = true;
                 }else {
-                    guiElements.get("castle_button").texture = textures.get("castle_disabled");
                 }
             }else{
-                guiElements.get("peasant_button").texture = textures.get("peasant_disabled");
+                guiElements.get("peasant_button").visible = false;
+                guiElements.get("castle_button").visible = false;
             }
+        }else if(selectedTerritory == null){
+            guiElements.get("gold_indicator").visible = false;
+            guiElements.get("peasant_button").visible = false;
+            guiElements.get("castle_button").visible = false;
+        }else{ 
+            guiElements.get("gold_indicator").visible = true;
         }
 
-        // Hide the toolbar GUI if the AI is playing
-        if(currPlayer.ai){
-            guiElements.get("peasant_button").visible = false;
-            guiElements.get("nextTurn").visible = false;
-            
-            GUI castle = guiElements.get("castle_button");
-            castle.visible = false;
-            image(textures.get("icon_computer"), castle.x, castle.y);
-        }else{
-            guiElements.get("peasant_button").visible = true;
-            guiElements.get("castle_button").visible = true;
-            guiElements.get("nextTurn").visible = true;
-        }
+        
+
+        
         
 
     }
@@ -679,40 +729,41 @@ public class OpenSlay extends PApplet {
         if(selectedTerritory != null && selectedTerritory == hex.territory){
             selected = true;
         }
-        
+        int imageSize = (int)(hexSize * 0.85);
 
         fill(hex.color.toProcessingColor());
         polygon(x + playAreaOffset.x, y + playAreaOffset.y, hexSize, 6, selected);
         switch(hex.code){
             case 2:
-                image(textures.get("pine"), x + playAreaOffset.x, y + playAreaOffset.y);
+                image(textures.get("pine"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
                 break;
             case 3:
-                image(textures.get("palm"), x + playAreaOffset.x, y + playAreaOffset.y);
+                image(textures.get("palm"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
                 break;
             case 4:
-                image(textures.get("peasant"), x + playAreaOffset.x, y + playAreaOffset.y);
+                image(textures.get("peasant"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
                 break;
             case 5:
-                image(textures.get("spearman"), x + playAreaOffset.x, y + playAreaOffset.y);
+                image(textures.get("spearman"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
                 break;
             case 6:
-                image(textures.get("knight"), x + playAreaOffset.x, y + playAreaOffset.y);
+                image(textures.get("knight"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
                 break;
             case 7:
-                image(textures.get("baron"), x + playAreaOffset.x, y + playAreaOffset.y);
+                image(textures.get("baron"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
                 break;
             
         }
-        if(hex.capital) image(textures.get("capital"), x + playAreaOffset.x, y + playAreaOffset.y);
-        if(hex.castle) image(textures.get("castle"), x + playAreaOffset.x, y + playAreaOffset.y);
+        if(hex.capital) image(textures.get("capital"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
+        if(hex.castle) image(textures.get("castle"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
 
         if(hex.owner == currPlayer){
+            imageSize = (int)(hexSize * 0.75);
             if(hex.hasUnit() && hex.unitCanMove){
-                image(textures.get("icon_exclamation"), x + playAreaOffset.x, y + playAreaOffset.y - (int)(hexSize * 0.8));
+                image(textures.get("icon_exclamation"), x + playAreaOffset.x, y + playAreaOffset.y - imageSize, imageSize, imageSize);
             }else if(hex.capital && hex.territory.getCapital().gold >= 10){
                 tint(50, 100, 200);
-                image(textures.get("icon_flag"), x + playAreaOffset.x, y + playAreaOffset.y - (int)(hexSize * 0.8));
+                image(textures.get("icon_flag"), x + playAreaOffset.x, y + playAreaOffset.y - imageSize, imageSize, imageSize);
                 noTint();
             }
         }
@@ -763,14 +814,7 @@ public class OpenSlay extends PApplet {
     // Asset loading
     public void importTexture(String name, String path, int size){
         PImage img = loadImage(path);
-        PGraphics p = createGraphics(img.width, img.height);        
-        p.noSmooth();
-        p.beginDraw();
-        p.hint(PConstants.DISABLE_OPTIMIZED_STROKE);
-        p.image(img, 0, 0);
-        p.endDraw();
-        img = p.get();
-        img.resize(size, size);
+        if(size != 0) img.resize(size, size);
         textures.put(name, img);
     }
 
@@ -862,9 +906,9 @@ public class OpenSlay extends PApplet {
     public void loadTextures(){
         textures.clear();
         importTexture("background", "textures/bg.png", 32);
-        importTexture("pine", "textures/pine.png", (int)(hexSize * 0.85));
-        importTexture("palm", "textures/palm.png", (int)(hexSize * 0.85));
-        importTexture("capital", "textures/capital.png", (int)(hexSize * 0.85));
+        importTexture("pine", "textures/pine.png", 0);
+        importTexture("palm", "textures/palm.png", 0);
+        importTexture("capital", "textures/capital.png", 0);
         // importTexture("peasant", "textures/peasant.png", (int)(hexSize * 0.85));
         importTexture("peasant_button", "textures/peasant.png", (width/40));
         importTexture("castle_button", "textures/fort.png", (width/40));
@@ -877,9 +921,9 @@ public class OpenSlay extends PApplet {
         g.endDraw();
         textures.put("peasant_disabled", g);
 
-        importTexture("spearman", "textures/spearman.png", (int)(hexSize * 0.85));
-        importTexture("knight", "textures/knight.png", (int)(hexSize * 0.85));
-        importTexture("baron", "textures/baron.png", (int)(hexSize * 0.85));
+        importTexture("spearman", "textures/spearman.png", 0);
+        importTexture("knight", "textures/knight.png", 0);
+        importTexture("baron", "textures/baron.png", 0);
 
         // importTexture("castle", "textures/fort.png", (int)(hexSize * 0.85));
         // Create disabled castle texture
@@ -891,8 +935,8 @@ public class OpenSlay extends PApplet {
         g.endDraw();
         textures.put("castle_disabled", g);
 
-        importTexture("icon_flag", "icons/flag.png", (int)(hexSize * 0.75));
-        importTexture("icon_exclamation", "icons/exclamation.png", (int)(hexSize * 0.75));
+        importTexture("icon_flag", "icons/flag.png", 0);
+        importTexture("icon_exclamation", "icons/exclamation.png", 0);
         importTexture("icon_computer", "icons/cpu.png", width / 20);
         importTexture("icon_player", "icons/player.png", width / 25);
 
