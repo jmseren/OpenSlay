@@ -237,16 +237,6 @@ public class OpenSlay extends PApplet {
         }
         
         // Initialize the GUI
-
-        // Add the peasant button
-        PImage peasantTexture = textures.get("peasant_disabled");
-        // ImageButton peasantButton = new ImageButton("peasant_button", peasantTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 2, peasantTexture.width, peasantTexture.height, Events.PEASANT);
-        // gui.put(peasantButton.name, peasantButton);
-
-        // Add the castle button
-        PImage castleTexture = textures.get("castle_disabled");
-        // ImageButton castleButton = new ImageButton("castle_button", castleTexture, (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height / 10 + (height /10) * 4, castleTexture.width, castleTexture.height, Events.CASTLE);
-        // gui.put(castleButton.name, castleButton);
         
         // Add the end turn button
         TextButton nextTurn = new TextButton("End Turn", (int)(width-((width * 0.25)) + (width * 0.25 / 2)), height - 100, 200, 50, new Event(Events.CHANGE_STATE, GameState.NEXT_TURN));
@@ -257,13 +247,13 @@ public class OpenSlay extends PApplet {
         gui.put("player_indicator", playerIndicator);
 
         // Add the peasant button
-        ImageElement peasantButton = new ImageElement("peasant_button", peasantTexture, (width/24)/2 + 10, height - ((width/24)/2 + 10), width/24, width/24);
+        ImageElement peasantButton = new ImageElement("peasant_button", textures.get("peasant"), (width/24)/2 + 10, height - ((width/24)/2 + 10), width/24, width/24);
         peasantButton.e = new Event(Events.PEASANT);
         peasantButton.resize = false;
         gui.put("peasant_button", peasantButton);
 
         // Add the castle button
-        ImageElement castleButton = new ImageElement("castle_button", castleTexture, (width/24) + 10 + width/30, height - ((width/24)/2 + 10), width/24, width/24);
+        ImageElement castleButton = new ImageElement("castle_button", textures.get("castle"), (width/24) + 10 + width/30, height - ((width/24)/2 + 10), width/24, width/24);
         castleButton.e = new Event(Events.CASTLE);
         castleButton.resize = false;
         gui.put("castle_button", castleButton);
@@ -445,7 +435,6 @@ public class OpenSlay extends PApplet {
                         selectedTerritory.getCapital().gold -= 10;
                         selectedTerritory = null;
                         selectedHex = null;
-                        guiElements.get("peasant_button").texture = textures.get("peasant_disabled");
                     }
                     break;
                 case CASTLE:
@@ -455,7 +444,6 @@ public class OpenSlay extends PApplet {
                         selectedTerritory.getCapital().gold -= 15;
                         selectedTerritory = null;
                         selectedHex = null;
-                        guiElements.get("castle_button").texture = textures.get("castle_disabled");
                     }
                     break;
                 case CHANGE_STATE:
@@ -912,44 +900,20 @@ public class OpenSlay extends PApplet {
         importTexture("pine", "textures/pine.png", 0);
         importTexture("palm", "textures/palm.png", 0);
         importTexture("capital", "textures/capital.png", 0);
-        importTexture("capital", "textures/capital.png", 0);
         importTexture("grave", "textures/grave.png", 128);
-        importTexture("peasant_button", "textures/peasant.png", (width/40));
-        importTexture("castle_button", "textures/fort.png", (width/40));
-        // Create disabled peasant texture
-        PImage p = textures.get("peasant_button");
-        PGraphics g = createGraphics(p.width, p.height);
-        g.beginDraw();
-        g.image(p, 0, 0, p.width, p.height);
-        g.filter(GRAY);
-        g.endDraw();
-        textures.put("peasant_disabled", g);
+        importTexture("peasant", "textures/peasant.png", (width/40));
+        importTexture("castle", "textures/fort.png", (width/40));
 
         importTexture("spearman", "textures/spearman.png", 0);
         importTexture("knight", "textures/knight.png", 0);
         importTexture("baron", "textures/baron.png", 0);
-
-        // importTexture("castle", "textures/fort.png", (int)(hexSize * 0.85));
-        // Create disabled castle texture
-        PImage f = textures.get("castle_button");
-        g = createGraphics(f.width, f.height);
-        g.beginDraw();
-        g.image(f, 0, 0, f.width, f.height);
-        g.filter(GRAY);
-        g.endDraw();
-        textures.put("castle_disabled", g);
 
         importTexture("icon_flag", "icons/flag.png", 0);
         importTexture("icon_exclamation", "icons/exclamation.png", 0);
         importTexture("icon_computer", "icons/cpu.png", width / 20);
         importTexture("icon_player", "icons/player.png", width / 25);
 
-        PImage i = textures.get("peasant_button").get();
-        i.resize((int)(hexSize * 0.85), (int)(hexSize * 0.85));
-        textures.put("peasant", i);
-        i = textures.get("castle_button").get();
-        i.resize((int)(hexSize * 0.85), (int)(hexSize * 0.85));
-        textures.put("castle", i);
+        
     }  
 
     // ENUMS
