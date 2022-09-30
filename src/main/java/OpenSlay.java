@@ -913,8 +913,7 @@ public class OpenSlay extends PApplet {
         importTexture("palm", "textures/palm.png", 0);
         importTexture("capital", "textures/capital.png", 0);
         importTexture("capital", "textures/capital.png", 0);
-        importTexture("grave", "textures/grave.png", 0);
-        // importTexture("peasant", "textures/peasant.png", (int)(hexSize * 0.85));
+        importTexture("grave", "textures/grave.png", 128);
         importTexture("peasant_button", "textures/peasant.png", (width/40));
         importTexture("castle_button", "textures/fort.png", (width/40));
         // Create disabled peasant texture
