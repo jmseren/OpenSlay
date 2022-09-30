@@ -309,7 +309,8 @@ public class OpenSlay extends PApplet {
                         if(t.getCapital().gold < 0){
                             for(Hex h : t.tiles){
                                 if(h.hasUnit()){
-                                    h.code = 1;
+                                    h.code = 2;
+                                    h.grave = true;
                                 }
                             }
                             t.getCapital().gold = 0;
@@ -318,7 +319,8 @@ public class OpenSlay extends PApplet {
                     }else{
                         for(Hex h : t.tiles){
                             if(h.hasUnit()){
-                                h.code = 1;
+                                h.code = 2;
+                                h.grave = true;
                             }
                         }
                     }
@@ -348,7 +350,7 @@ public class OpenSlay extends PApplet {
                                     // A palm tree should be grown
                                     treesToGrow.put(h, 3);
                                     break;
-                                }else if(n.code == 2){
+                                }else if(n.code == 2 && !h.grave){
                                     // Add a tally to pine tree neighbors
                                     pines++;
                                 }
@@ -735,7 +737,8 @@ public class OpenSlay extends PApplet {
         polygon(x + playAreaOffset.x, y + playAreaOffset.y, hexSize, 6, selected);
         switch(hex.code){
             case 2:
-                image(textures.get("pine"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
+                if(!hex.grave) image(textures.get("pine"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
+                else image(textures.get("grave"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
                 break;
             case 3:
                 image(textures.get("palm"), x + playAreaOffset.x, y + playAreaOffset.y, imageSize, imageSize);
@@ -909,6 +912,8 @@ public class OpenSlay extends PApplet {
         importTexture("pine", "textures/pine.png", 0);
         importTexture("palm", "textures/palm.png", 0);
         importTexture("capital", "textures/capital.png", 0);
+        importTexture("capital", "textures/capital.png", 0);
+        importTexture("grave", "textures/grave.png", 0);
         // importTexture("peasant", "textures/peasant.png", (int)(hexSize * 0.85));
         importTexture("peasant_button", "textures/peasant.png", (width/40));
         importTexture("castle_button", "textures/fort.png", (width/40));

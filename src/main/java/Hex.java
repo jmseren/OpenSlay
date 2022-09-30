@@ -10,6 +10,7 @@ public class Hex {
     int code;
 
     public boolean castle = false;
+    public boolean grave = false;
 
     // Capital hex variables
     public boolean capital = false;
@@ -46,6 +47,7 @@ public class Hex {
         this.castle = unitcode == 8;
         this.capital = false;
         this.code = castle ? 1 : unitcode;
+        this.grave = false;
 
     }
     public Player getOwner(){
@@ -82,6 +84,7 @@ public class Hex {
         if(codeToUnitPower(newCode) > 7) return false;
 
         this.code = newCode;
+        this.grave = false;
         return true;
     }
     public boolean isEmpty(){
